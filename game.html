@@ -48,7 +48,10 @@
     <h2>Next Round in AFL</h2>
     <ul id="fixture-list">Loading...</ul>
 
-    <script type="module" src="script.js"></script>
+   <script type="module">
+    import { submitLadder } from "./script.js";
+    window.submitLadder = submitLadder;
+</script>
 
 </body>
 </html>
