@@ -1,4 +1,4 @@
-const GOOGLE_SHEET_API_URL = "https://script.google.com/macros/s/AKfycbyf1Nly1rTbII_v7nSfpZ8vx2jv0uohrL9Sb5wVKw3uUyOxuHGBGxbrtt5foMadOF4G/exec";
+const GOOGLE_SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwXNrJ3Ccp4vm-pxEi4unqJVd4wpnfjF0Nm6qufLaoBaKX9h-fPDEbrzt6gBkJOD38I/exec";
 
 const teams = [
     "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon",
