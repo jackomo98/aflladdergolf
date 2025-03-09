@@ -1,11 +1,8 @@
-// ✅ Google Apps Script API URL (Replace with your live script URL)
 const GOOGLE_SHEET_API_URL = "https://script.google.com/macros/s/AKfycbxgEfupvm347ztiMCQtQwOLZoC6QALGZfeJnuLJejdC2_gjz5qhyQ0GCgC7Nlwky4SL/exec";
 
-// ✅ Squiggle API for Live Ladder & Fixtures
 const SQUIGGLE_API_LADDER = "https://api.squiggle.com.au/?q=ladder";
 const SQUIGGLE_API_FIXTURES = "https://api.squiggle.com.au/?q=games;year=2025;round=NEXT";
 
-// ✅ AFL Teams List (For Ranking)
 const teams = [
     "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon",
     "Fremantle", "Geelong", "Gold Coast", "GWS", "Hawthorn",
@@ -13,32 +10,53 @@ const teams = [
     "St Kilda", "Sydney", "West Coast", "Western Bulldogs"
 ];
 
-// ✅ Populate Draggable Ranking List
 const teamRanking = document.getElementById("teamRanking");
 teams.forEach(team => {
     const listItem = document.createElement("li");
     listItem.textContent = team;
     listItem.draggable = true;
-    listItem.ondragstart = (event) => {
-        event.dataTransfer.setData("text/plain", event.target.textContent);
-    };
+    listItem.classList.add("draggable");
+    listItem.setAttribute("data-team", team);
+    
+    listItem.addEventListener("dragstart", (event) => {
+        event.dataTransfer.setData("text/plain", event.target.dataset.team);
+        event.target.classList.add("dragging");
+    });
+
+    listItem.addEventListener("dragend", (event) => {
+        event.target.classList.remove("dragging");
+    });
+
     teamRanking.appendChild(listItem);
 });
 
-teamRanking.ondragover = (event) => event.preventDefault();
-teamRanking.ondrop = (event) => {
+teamRanking.addEventListener("dragover", (event) => {
     event.preventDefault();
-    const draggedTeam = event.dataTransfer.getData("text/plain");
-    const newPosition = event.target;
-    if (newPosition.tagName === "LI") {
-        teamRanking.insertBefore(
-            document.querySelector(`li:contains('${draggedTeam}')`),
-            newPosition
-        );
+    const draggingItem = document.querySelector(".dragging");
+    const afterElement = getDragAfterElement(teamRanking, event.clientY);
+    
+    if (afterElement == null) {
+        teamRanking.appendChild(draggingItem);
+    } else {
+        teamRanking.insertBefore(draggingItem, afterElement);
     }
-};
+});
 
-// ✅ Submit Ladder Prediction
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll(".draggable:not(.dragging)")];
+
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
 async function submitLadder() {
     const playerName = document.getElementById("playerName").value.trim();
     if (!playerName) {
@@ -66,7 +84,6 @@ async function submitLadder() {
     }
 }
 
-// ✅ Load Leaderboard from Google Sheets
 async function loadLeaderboard() {
     try {
         const response = await fetch(GOOGLE_SHEET_API_URL);
@@ -87,7 +104,6 @@ async function loadLeaderboard() {
     }
 }
 
-// ✅ Load Live AFL Ladder & Fixtures
 async function loadLiveData() {
     try {
         const ladderResponse = await fetch(SQUIGGLE_API_LADDER);
