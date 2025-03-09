@@ -1,11 +1,11 @@
 // ✅ Google Apps Script API URL (Replace with your live script URL)
-const GOOGLE_SHEET_API_URL = "YOUR_GOOGLE_SHEET_SCRIPT_URL_HERE";
+const GOOGLE_SHEET_API_URL = "https://script.google.com/macros/s/AKfycbxgEfupvm347ztiMCQtQwOLZoC6QALGZfeJnuLJejdC2_gjz5qhyQ0GCgC7Nlwky4SL/exec";
 
 // ✅ Squiggle API for Live Ladder & Fixtures
 const SQUIGGLE_API_LADDER = "https://api.squiggle.com.au/?q=ladder";
 const SQUIGGLE_API_FIXTURES = "https://api.squiggle.com.au/?q=games;year=2025;round=NEXT";
 
-// ✅ AFL Teams List
+// ✅ AFL Teams List (For Ranking)
 const teams = [
     "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon",
     "Fremantle", "Geelong", "Gold Coast", "GWS", "Hawthorn",
@@ -13,13 +13,30 @@ const teams = [
     "St Kilda", "Sydney", "West Coast", "Western Bulldogs"
 ];
 
-// ✅ Populate Ladder Submission Table
-const ladderBody = document.getElementById("ladderBody");
-teams.forEach((team, index) => {
-    const row = document.createElement("tr");
-    row.innerHTML = `<td>${index + 1}</td><td>${team}</td>`;
-    ladderBody.appendChild(row);
+// ✅ Populate Draggable Ranking List
+const teamRanking = document.getElementById("teamRanking");
+teams.forEach(team => {
+    const listItem = document.createElement("li");
+    listItem.textContent = team;
+    listItem.draggable = true;
+    listItem.ondragstart = (event) => {
+        event.dataTransfer.setData("text/plain", event.target.textContent);
+    };
+    teamRanking.appendChild(listItem);
 });
+
+teamRanking.ondragover = (event) => event.preventDefault();
+teamRanking.ondrop = (event) => {
+    event.preventDefault();
+    const draggedTeam = event.dataTransfer.getData("text/plain");
+    const newPosition = event.target;
+    if (newPosition.tagName === "LI") {
+        teamRanking.insertBefore(
+            document.querySelector(`li:contains('${draggedTeam}')`),
+            newPosition
+        );
+    }
+};
 
 // ✅ Submit Ladder Prediction
 async function submitLadder() {
@@ -30,8 +47,8 @@ async function submitLadder() {
     }
 
     const prediction = [];
-    document.querySelectorAll("#ladderBody tr").forEach(row => {
-        prediction.push(row.cells[1].textContent);
+    document.querySelectorAll("#teamRanking li").forEach(li => {
+        prediction.push(li.textContent);
     });
 
     try {
@@ -43,7 +60,7 @@ async function submitLadder() {
 
         const result = await response.json();
         alert(result.message);
-        loadLeaderboard(); // Refresh leaderboard
+        loadLeaderboard();
     } catch (error) {
         console.error("Error submitting ladder:", error);
     }
@@ -70,7 +87,7 @@ async function loadLeaderboard() {
     }
 }
 
-// ✅ Load AFL Ladder & Next Round Matches
+// ✅ Load Live AFL Ladder & Fixtures
 async function loadLiveData() {
     try {
         const ladderResponse = await fetch(SQUIGGLE_API_LADDER);
@@ -81,7 +98,7 @@ async function loadLiveData() {
         ladderData.ladder.forEach(team => {
             tbody.innerHTML += `<tr>
                 <td>${team.rank}</td><td>${team.name}</td><td>${team.wins}</td>
-                <td>${team.losses}</td><td>${team.percentage.toFixed(2)}%</td>
+                <td>${team.losses}</td><td>${team.percentage ? team.percentage.toFixed(2) : "N/A"}%</td>
             </tr>`;
         });
 
