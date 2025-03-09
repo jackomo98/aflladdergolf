@@ -1,1 +1,92 @@
+/* ✅ Global Styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #003087; /* AFL Blue */
+    color: white;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+}
 
+/* ✅ Centered ranking grid */
+.ranking-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin-top: 20px;
+}
+
+/* ✅ Styled ranking list */
+#teamRanking {
+    background: white;
+    color: black;
+    padding: 20px;
+    border-radius: 10px;
+    width: 350px;
+    text-align: left;
+    border: 3px solid white;
+}
+
+/* ✅ List item style */
+#teamRanking li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    font-weight: bold;
+    text-transform: uppercase; /* ALL CAPS */
+    cursor: grab;
+    transition: background 0.2s ease-in-out;
+}
+
+/* ✅ Hover & drag effect */
+#teamRanking li:hover,
+#teamRanking li.dragging {
+    background-color: lightgray;
+}
+
+/* ✅ Position number styling */
+.position {
+    font-size: 18px;
+    font-weight: bold;
+    color: #003087; /* AFL Blue */
+}
+
+/* ✅ Button Styling */
+button {
+    background-color: white;
+    color: #003087;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 15px;
+    transition: 0.3s;
+}
+
+button:hover {
+    background-color: lightgray;
+}
+
+/* ✅ Leaderboard Table */
+table {
+    width: 80%;
+    margin: 20px auto;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid white;
+    text-align: center;
+}
+
+th {
+    background: white;
+    color: #003087;
+    font-weight: bold;
+}
