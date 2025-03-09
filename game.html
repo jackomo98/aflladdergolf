@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AFL Ladder Tipping</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <h1>AFL 2025 Ladder Tipping Game</h1>
+
+    <!-- Ladder Prediction Submission -->
+    <h2>Rank AFL Teams</h2>
+    <input type="text" id="playerName" placeholder="Enter your name">
+    <table>
+        <thead>
+            <tr><th>Rank</th><th>Team</th></tr>
+        </thead>
+        <tbody id="ladderBody"></tbody>
+    </table>
+    <button onclick="submitLadder()">Submit Prediction</button>
+
+    <!-- Leaderboard -->
+    <h2>Leaderboard</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Score (Lower is Better)</th>
+            </tr>
+        </thead>
+        <tbody id="leaderboard"></tbody>
+    </table>
+
+    <!-- Live AFL Ladder -->
+    <h2>Live AFL Ladder</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Position</th>
+                <th>Team</th>
+                <th>Wins</th>
+                <th>Losses</th>
+                <th>Percentage</th>
+            </tr>
+        </thead>
+        <tbody id="liveLadder"></tbody>
+    </table>
+
+    <!-- Next Round Fixtures -->
+    <h2>Next Round in AFL</h2>
+    <ul id="fixture-list">Loading...</ul>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
