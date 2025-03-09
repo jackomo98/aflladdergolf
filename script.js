@@ -1,4 +1,4 @@
-const GOOGLE_SHEET_API_URL = "https://script.google.com/macros/s/AKfycbxgEfupvm347ztiMCQtQwOLZoC6QALGZfeJnuLJejdC2_gjz5qhyQ0GCgC7Nlwky4SL/exec";
+const GOOGLE_SHEET_API_URL = "https://script.google.com/macros/s/AKfycbyCAl4CJTf3QoaxNoD9vTzTse9oMxcsIgkDB1-KTSikamIGsWVmTN6PHdsW-4wZXbs/exec";
 
 const SQUIGGLE_API_LADDER = "https://api.squiggle.com.au/?q=ladder";
 const SQUIGGLE_API_FIXTURES = "https://api.squiggle.com.au/?q=games;year=2025;round=NEXT";
