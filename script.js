@@ -1,26 +1,21 @@
-// ✅ Firebase Setup
+// ✅ Import Firebase Modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
+// ✅ Your Firebase Configuration (Replace with your real details)
 const firebaseConfig = {
-  apiKey: "AIzaSyAGk1YEUQ1iB0cWCnrvHInwSdPUQJYtFBw",
-  authDomain: "afl-ladder-game.firebaseapp.com",
-  databaseURL: "https://afl-ladder-game-default-rtdb.firebaseio.com",
-  projectId: "afl-ladder-game",
-  storageBucket: "afl-ladder-game.firebasestorage.app",
-  messagingSenderId: "779608521804",
-  appId: "1:779608521804:web:8c92c138dd2e61fa5688e9"
+    apiKey: "YOUR_API_KEY",
+    authDomain: "your-project.firebaseapp.com",
+    projectId: "your-project-id",
+    storageBucket: "your-project.appspot.com",
+    messagingSenderId: "your-messaging-id",
+    appId: "your-app-id"
 };
 
 // ✅ Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+console.log("✅ Firebase Loaded Successfully");
 
 // ✅ AFL Teams List (For Ranking)
 const teams = [
@@ -30,7 +25,7 @@ const teams = [
     "St Kilda", "Sydney", "West Coast", "Western Bulldogs"
 ];
 
-// ✅ Populate Ranking List
+// ✅ Populate Drag-and-Drop Ranking List
 const teamRanking = document.getElementById("teamRanking");
 teams.forEach((team, index) => {
     const listItem = document.createElement("li");
@@ -99,10 +94,10 @@ async function submitLadder() {
             timestamp: new Date()
         });
 
-        alert("Prediction saved!");
+        alert("✅ Prediction saved!");
         loadLeaderboard();
     } catch (error) {
-        console.error("Error submitting ladder:", error);
+        console.error("❌ Error submitting ladder:", error);
     }
 }
 
@@ -111,14 +106,20 @@ async function loadLeaderboard() {
     const tbody = document.getElementById('leaderboard');
     tbody.innerHTML = ''; // Clear old data
 
-    const querySnapshot = await getDocs(collection(db, "predictions"));
-    querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        const row = document.createElement("tr");
+    try {
+        const querySnapshot = await getDocs(collection(db, "predictions"));
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const row = document.createElement("tr");
 
-        row.innerHTML = `<td>${data.name}</td><td>${JSON.stringify(data.prediction)}</td>`;
-        tbody.appendChild(row);
-    });
+            row.innerHTML = `<td>${data.name}</td><td>${JSON.stringify(data.prediction)}</td>`;
+            tbody.appendChild(row);
+        });
+
+        console.log("✅ Leaderboard Loaded Successfully");
+    } catch (error) {
+        console.error("❌ Error loading leaderboard:", error);
+    }
 }
 
 // ✅ Load leaderboard when the page loads
