@@ -26,26 +26,42 @@ const teams = [
     "St Kilda", "Sydney", "West Coast", "Western Bulldogs"
 ];
 
-// ✅ Populate Drag-and-Drop Ranking List
+// ✅ Populate Drag-and-Drop Ranking List (with Dynamic Position Numbers)
 const teamRanking = document.getElementById("teamRanking");
-teams.forEach((team, index) => {
-    const listItem = document.createElement("li");
-    listItem.textContent = team;
-    listItem.draggable = true;
-    listItem.classList.add("draggable");
-    listItem.setAttribute("data-team", team);
-    
-    listItem.addEventListener("dragstart", (event) => {
-        event.dataTransfer.setData("text/plain", event.target.dataset.team);
-        event.target.classList.add("dragging");
-    });
 
-    listItem.addEventListener("dragend", (event) => {
-        event.target.classList.remove("dragging");
-    });
+function updateRankingList() {
+    teamRanking.innerHTML = ""; // Clear the list before repopulating
+    teams.forEach((team, index) => {
+        const listItem = document.createElement("li");
+        listItem.textContent = team;
+        listItem.draggable = true;
+        listItem.classList.add("draggable");
+        listItem.setAttribute("data-team", team);
+        listItem.setAttribute("data-rank", index + 1); // Set dynamic position number
 
-    teamRanking.appendChild(listItem);
-});
+        listItem.addEventListener("dragstart", (event) => {
+            event.dataTransfer.setData("text/plain", event.target.dataset.team);
+            event.target.classList.add("dragging");
+        });
+
+        listItem.addEventListener("dragend", (event) => {
+            event.target.classList.remove("dragging");
+            updateRankNumbers(); // Update numbers when order changes
+        });
+
+        teamRanking.appendChild(listItem);
+    });
+}
+
+// ✅ Function to Update Position Numbers After Dragging
+function updateRankNumbers() {
+    document.querySelectorAll("#teamRanking li").forEach((li, index) => {
+        li.setAttribute("data-rank", index + 1);
+    });
+}
+
+// ✅ Initialize the Ranking List
+updateRankingList();
 
 // ✅ Drag-and-Drop Functionality
 teamRanking.addEventListener("dragover", (event) => {
