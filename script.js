@@ -1,8 +1,5 @@
 const GOOGLE_SHEET_API_URL = "https://script.google.com/macros/s/AKfycbyCAl4CJTf3QoaxNoD9vTzTse9oMxcsIgkDB1-KTSikamIGsWVmTN6PHdsW-4wZXbs/exec";
 
-const SQUIGGLE_API_LADDER = "https://api.squiggle.com.au/?q=ladder";
-const SQUIGGLE_API_FIXTURES = "https://api.squiggle.com.au/?q=games;year=2025;round=NEXT";
-
 const teams = [
     "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon",
     "Fremantle", "Geelong", "Gold Coast", "GWS", "Hawthorn",
@@ -17,7 +14,7 @@ teams.forEach(team => {
     listItem.draggable = true;
     listItem.classList.add("draggable");
     listItem.setAttribute("data-team", team);
-    
+
     listItem.addEventListener("dragstart", (event) => {
         event.dataTransfer.setData("text/plain", event.target.dataset.team);
         event.target.classList.add("dragging");
@@ -96,7 +93,7 @@ async function loadLeaderboard() {
             tbody.innerHTML += `<tr>
                 <td>${index + 1}</td>
                 <td>${entry.name}</td>
-                <td>${entry.score}</td>
+                <td>${entry.prediction.join(", ")}</td>
             </tr>`;
         });
     } catch (error) {
@@ -104,33 +101,4 @@ async function loadLeaderboard() {
     }
 }
 
-async function loadLiveData() {
-    try {
-        const ladderResponse = await fetch(SQUIGGLE_API_LADDER);
-        const ladderData = await ladderResponse.json();
-        const tbody = document.getElementById('liveLadder');
-        tbody.innerHTML = '';
-
-        ladderData.ladder.forEach(team => {
-            tbody.innerHTML += `<tr>
-                <td>${team.rank}</td><td>${team.name}</td><td>${team.wins}</td>
-                <td>${team.losses}</td><td>${team.percentage ? team.percentage.toFixed(2) : "N/A"}%</td>
-            </tr>`;
-        });
-
-        const fixturesResponse = await fetch(SQUIGGLE_API_FIXTURES);
-        const fixturesData = await fixturesResponse.json();
-        const fixtureList = document.getElementById("fixture-list");
-        fixtureList.innerHTML = '';
-
-        fixturesData.games.forEach(game => {
-            fixtureList.innerHTML += `<li>${game.hteam} vs ${game.ateam} - ${game.date}</li>`;
-        });
-    } catch (error) {
-        console.error("Error fetching live data:", error);
-    }
-}
-
 loadLeaderboard();
-loadLiveData();
-setInterval(loadLiveData, 60000);
