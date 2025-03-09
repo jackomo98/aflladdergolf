@@ -8,7 +8,7 @@ body {
     padding: 20px;
 }
 
-/* ✅ Centered ranking grid */
+/* ✅ Centered ranking container */
 .ranking-container {
     display: flex;
     justify-content: center;
@@ -26,13 +26,15 @@ body {
     width: 350px;
     text-align: left;
     border: 3px solid white;
+    list-style: none;
+    padding: 0;
 }
 
 /* ✅ List item style */
 #teamRanking li {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     padding: 12px;
     border-bottom: 1px solid #ddd;
     font-weight: bold;
@@ -41,17 +43,19 @@ body {
     transition: background 0.2s ease-in-out;
 }
 
+/* ✅ Position number styling */
+#teamRanking li::before {
+    content: attr(data-rank) ".";
+    font-size: 18px;
+    font-weight: bold;
+    color: #003087; /* AFL Blue */
+    margin-right: 10px;
+}
+
 /* ✅ Hover & drag effect */
 #teamRanking li:hover,
 #teamRanking li.dragging {
     background-color: lightgray;
-}
-
-/* ✅ Position number styling */
-.position {
-    font-size: 18px;
-    font-weight: bold;
-    color: #003087; /* AFL Blue */
 }
 
 /* ✅ Button Styling */
