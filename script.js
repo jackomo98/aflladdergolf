@@ -4,12 +4,13 @@ import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.c
 
 // ✅ Your Firebase Configuration (Replace with your real details)
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "your-project.firebaseapp.com",
-    projectId: "your-project-id",
-    storageBucket: "your-project.appspot.com",
-    messagingSenderId: "your-messaging-id",
-    appId: "your-app-id"
+      apiKey: "AIzaSyAGk1YEUQ1iB0cWCnrvHInwSdPUQJYtFBw",
+  authDomain: "afl-ladder-game.firebaseapp.com",
+  databaseURL: "https://afl-ladder-game-default-rtdb.firebaseio.com",
+  projectId: "afl-ladder-game",
+  storageBucket: "afl-ladder-game.firebasestorage.app",
+  messagingSenderId: "779608521804",
+  appId: "1:779608521804:web:8c92c138dd2e61fa5688e9"
 };
 
 // ✅ Initialize Firebase
