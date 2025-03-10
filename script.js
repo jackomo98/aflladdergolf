@@ -1,3 +1,4 @@
+
 // ✅ Import Firebase Modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -245,6 +246,6 @@ function displayLadder(ladderData) {
 
 // Run function when the page loads
 window.addEventListener("DOMContentLoaded", () => {
-    fetchAFLStandings();  // Load AFL ladder
-    loadLeaderboard();  // Load player leaderboard from Firebase
+    fetchAFLStandings(); // Load AFL ladder
+    loadLeaderboard();   // Load player leaderboard from Firebase ✅ Fixed!
 });
