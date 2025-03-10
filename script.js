@@ -196,3 +196,51 @@ window.loadLiveLadder = loadLiveLadder;
 window.submitLadder = submitLadder;
 window.loadLeaderboard = loadLeaderboard;
 window.loadLiveLadder = loadLiveLadder;
+
+async function fetchAFLStandings() {
+    try {
+        const response = await fetch('https://api.squiggle.com.au/?q=ladder');
+        const data = await response.json();
+
+        if (data && data.ladder) {
+            displayLadder(data.ladder);
+        } else {
+            console.error("Invalid ladder data received:", data);
+        }
+    } catch (error) {
+        console.error("Error fetching AFL ladder:", error);
+    }
+}
+
+function displayLadder(ladderData) {
+    const ladderContainer = document.getElementById('live-ladder');
+
+    if (!ladderContainer) {
+        console.error("Ladder container not found!");
+        return;
+    }
+
+    ladderContainer.innerHTML = `
+        <table>
+            <tr>
+                <th>Rank</th>
+                <th>Team</th>
+                <th>Wins</th>
+                <th>Losses</th>
+                <th>Percentage</th>
+            </tr>
+            ${ladderData.map(team => `
+                <tr>
+                    <td>${team.rank}</td>
+                    <td>${team.team}</td>
+                    <td>${team.wins}</td>
+                    <td>${team.losses}</td>
+                    <td>${team.percentage.toFixed(2)}%</td>
+                </tr>
+            `).join('')}
+        </table>
+    `;
+}
+
+// Run function when the page loads
+window.addEventListener('DOMContentLoaded', fetchAFLStandings);
