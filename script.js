@@ -21,8 +21,10 @@ console.log("✅ Firebase Realtime Database Connected");
 // 🏆 Fetch Live AFL Ladder
 async function fetchAFLStandings() {
     try {
-        console.log("🕵️ Fetching Live AFL Ladder...");
-        const response = await fetch("https://api.squiggle.com.au/?q=ladder");
+        console.log("📡 Fetching Live AFL Ladder...");
+
+        // ✅ Make sure we're fetching the **2025** season ladder from Squiggle API
+        const response = await fetch("https://api.squiggle.com.au/?q=ladder&year=2025");
         const data = await response.json();
 
         console.log("✅ AFL Ladder API Response:", data);
@@ -41,22 +43,30 @@ async function fetchAFLStandings() {
 function displayLadder(ladderData) {
     const ladderContainer = document.getElementById("liveLadder");
     if (!ladderContainer) {
-        console.error("❌ Ladder container not found!");
+        console.error("⚠️ Ladder container not found!");
         return;
     }
 
-    ladderContainer.innerHTML = ""; // Clear previous content
+    // ✅ Sort teams by `rank`
+    const sortedLadder = ladderData.sort((a, b) => a.rank - b.rank);
 
-    ladderData.sort((a, b) => a.rank - b.rank); // Ensure correct ranking order
+    // ✅ Ensure only 18 unique teams are displayed
+    const uniqueTeams = [];
+    const filteredLadder = sortedLadder.filter(team => {
+        if (!uniqueTeams.includes(team.team)) {
+            uniqueTeams.push(team.team);
+            return true;
+        }
+        return false;
+    });
 
-    ladderData.forEach((team) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
+    // ✅ Update the table
+    ladderContainer.innerHTML = filteredLadder.map(team => `
+        <tr>
             <td>${team.rank}</td>
             <td>${team.team}</td>
-        `;
-        ladderContainer.appendChild(row);
-    });
+        </tr>
+    `).join('');
 
     console.log("✅ Live AFL Ladder Updated");
 }
