@@ -202,8 +202,6 @@ async function fetchAFLStandings() {
         const response = await fetch('https://api.squiggle.com.au/?q=ladder');
         const data = await response.json();
 
-        console.log("API Response:", data); // Debugging
-
         if (data && data.ladder) {
             displayLadder(data.ladder);
         } else {
@@ -215,33 +213,27 @@ async function fetchAFLStandings() {
 }
 
 function displayLadder(ladderData) {
-    const ladderContainer = document.getElementById('live-ladder');
+    const ladderContainer = document.getElementById('liveLadder');
 
     if (!ladderContainer) {
         console.error("Ladder container not found!");
         return;
     }
 
-    ladderContainer.innerHTML = `
-        <table>
+    // Ensure only 18 teams are shown
+    const trimmedData = ladderData.slice(0, 18);
+
+    ladderContainer.innerHTML = trimmedData
+        .map(team => `
             <tr>
-                <th>Rank</th>
-                <th>Team</th>
-                <th>Wins</th>
-                <th>Losses</th>
-                <th>Percentage</th>
+                <td>${team.rank}</td>
+                <td>${team.team.name}</td>
+                <td>${team.wins}</td>
+                <td>${team.losses}</td>
+                <td>${team.percentage.toFixed(2)}%</td>
             </tr>
-            ${ladderData.map(team => `
-                <tr>
-                    <td>${team.rank}</td>
-                    <td>${team.team}</td>
-                    <td>${team.wins}</td>
-                    <td>${team.losses}</td>
-                    <td>${team.percentage.toFixed(2)}%</td>
-                </tr>
-            `).join('')}
-        </table>
-    `;
+        `)
+        .join('');
 }
 
 // Run function when the page loads
