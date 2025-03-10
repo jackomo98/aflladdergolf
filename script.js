@@ -16,11 +16,67 @@ const firebaseConfig = {
   appId: "1:779608521804:web:8c92c138dd2e61fa5688e9"
 };
 
-// ✅ Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-console.log("✅ Firebase Loaded Successfully");
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+// ✅ Initialize Firebase Realtime Database
+const database = getDatabase(app);
+
+// 🏅 Handle Player Submissions
+document.getElementById("submitPrediction").addEventListener("click", function () {
+    const playerName = document.getElementById("playerName").value;
+
+    if (!playerName) {
+        alert("⚠ Please enter your name!");
+        return;
+    }
+
+    // Save player prediction (Realtime Database)
+    const playerRef = ref(database, "leaderboard/" + playerName);
+    set(playerRef, {
+        name: playerName,
+        points: Math.floor(Math.random() * 100) // Temporary random score
+    }).then(() => {
+        alert("✅ Prediction submitted!");
+        loadLeaderboard();
+    }).catch(error => {
+        console.error("❌ Error saving prediction:", error);
+    });
+});
+
+// 🏆 Load Leaderboard from Firebase
+async function loadLeaderboard() {
+    console.log("📡 Fetching Player Leaderboard...");
+
+    try {
+        const leaderboardRef = ref(database, "leaderboard");
+        onValue(leaderboardRef, (snapshot) => {
+            const leaderboardContainer = document.getElementById("leaderboard");
+            leaderboardContainer.innerHTML = "";
+
+            if (snapshot.exists()) {
+                let leaderboardData = [];
+                snapshot.forEach((childSnapshot) => {
+                    leaderboardData.push(childSnapshot.val());
+                });
+
+                // Sort by lowest points (best rank)
+                leaderboardData.sort((a, b) => a.points - b.points);
+
+                leaderboardData.forEach((player, index) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `<td>${index + 1}</td><td>${player.name}</td><td>${player.points}</td>`;
+                    leaderboardContainer.appendChild(row);
+                });
+
+                console.log("✅ Leaderboard Updated");
+            } else {
+                console.warn("⚠ No leaderboard data found!");
+            }
+        });
+    } catch (error) {
+        console.error("❌ Error loading leaderboard:", error);
+    }
+}
 // ✅ AFL Teams List (For Ranking)
 const teams = [
     "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon",
@@ -78,65 +134,7 @@ function getDragAfterElement(container, y) {
     }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
-// 🏅 Handle Player Submissions
-document.getElementById("submitPrediction").addEventListener("click", function () {
-    const playerName = document.getElementById("playerName").value;
-
-    if (!playerName) {
-        alert("⚠ Please enter your name!");
-        return;
-    }
-
-    // Save player prediction (Placeholder logic)
-    const playerRef = ref(db, "leaderboard/" + playerName);
-    set(playerRef, {
-        name: playerName,
-        points: Math.floor(Math.random() * 100) // Temporary score logic
-    });
-
-    alert("✅ Prediction submitted!");
-    loadLeaderboard();
-});
-
-// 🏆 Load Leaderboard from Firebase
-async function loadLeaderboard() {
-    console.log("📡 Fetching Player Leaderboard...");
-
-    try {
-        const leaderboardRef = ref(db, "leaderboard");
-        onValue(leaderboardRef, (snapshot) => {
-            const leaderboardContainer = document.getElementById("leaderboard");
-            leaderboardContainer.innerHTML = "";
-
-            if (snapshot.exists()) {
-                let leaderboardData = [];
-                snapshot.forEach((childSnapshot) => {
-                    leaderboardData.push(childSnapshot.val());
-                });
-
-                // Sort by lowest points (best rank)
-                leaderboardData.sort((a, b) => a.points - b.points);
-
-                leaderboardData.forEach((player, index) => {
-                    const row = document.createElement("tr");
-                    row.innerHTML = `<td>${index + 1}</td><td>${player.name}</td><td>${player.points}</td>`;
-                    leaderboardContainer.appendChild(row);
-                });
-
-                console.log("✅ Leaderboard Updated");
-            } else {
-                console.warn("⚠ No leaderboard data found!");
-            }
-        });
-    } catch (error) {
-        console.error("❌ Error loading leaderboard:", error);
-    }
-}
-
-// Load leaderboard when page loads
-window.addEventListener("DOMContentLoaded", loadLeaderboard);
-
-// 🏆 Fetch Live AFL Ladder from Squiggle API
+// 🏆 Fetch Live AFL Ladder from Squiggle API (for 2025)
 async function fetchAFLStandings() {
     console.log("📡 Fetching Live AFL Ladder...");
 
@@ -150,7 +148,14 @@ async function fetchAFLStandings() {
         console.log("✅ AFL Ladder API Response:", data);
 
         if (data.standings && data.standings.length > 0) {
-            displayLadder(data.standings);
+            // ✅ Filter for only 2025 season data
+            const season2025Standings = data.standings.filter(team => team.year === 2025);
+
+            if (season2025Standings.length > 0) {
+                displayLadder(season2025Standings);
+            } else {
+                console.error("⚠ No standings found for 2025 season.");
+            }
         } else {
             console.error("⚠ No ladder data found in response");
         }
@@ -158,8 +163,6 @@ async function fetchAFLStandings() {
     } catch (error) {
         console.error("❌ Error fetching AFL ladder:", error);
     }
-}
-
 // 📊 Display Ladder on Page
 function displayLadder(standings) {
     const ladderContainer = document.getElementById("liveLadder");
@@ -187,4 +190,5 @@ function displayLadder(standings) {
 // 🏁 Run functions on page load
 window.addEventListener("DOMContentLoaded", () => {
     fetchAFLStandings(); // Load AFL Ladder
+    loadLeaderboard(); // Load Leaderboard
 });
