@@ -149,13 +149,14 @@ async function loadLiveLadder() {
     try {
         console.log("Fetching live AFL ladder...");
         const response = await fetch("https://api.squiggle.com.au/?q=ladder");
-        
+
         if (!response.ok) {
             throw new Error("Failed to fetch AFL Ladder");
         }
 
         const data = await response.json();
-        
+        console.log("📊 AFL Ladder API Response:", data); // Debugging line
+
         // Ensure the ladder data exists and is an array
         if (!data.ladder || !Array.isArray(data.ladder)) {
             throw new Error("Invalid ladder data received");
