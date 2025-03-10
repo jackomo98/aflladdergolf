@@ -13,12 +13,12 @@
     <!-- Rank AFL Teams -->
     <h2>Rank AFL Teams</h2>
     <input type="text" id="playerName" placeholder="Enter your name">
-    
+
     <div class="ranking-container">
         <ul id="teamRanking" class="ranking-list"></ul>
     </div>
-    
-    <button onclick="window.submitLadder()">Submit Prediction</button>
+
+    <button id="submitPrediction">Submit Prediction</button>
 
     <!-- Leaderboard -->
     <h2>Leaderboard</h2>
@@ -30,7 +30,7 @@
                 <th>Points</th>
             </tr>
         </thead>
-        <tbody id="leaderboard"></tbody>
+        <tbody id="leaderboard"></tbody>  <!-- ✅ This was missing -->
     </table>
 
     <!-- Live AFL Ladder -->
@@ -39,20 +39,17 @@
         <thead>
             <tr>
                 <th>Position</th>
-                <th>Team</th>
-                <th>Wins</th>
-                <th>Losses</th>
-                <th>Percentage</th>
+                <th>Team</th>  <!-- ✅ Removed Wins, Losses, and % -->
             </tr>
         </thead>
         <tbody id="liveLadder"></tbody>
     </table>
 
     <section id="live-ladder">
-    <p>Loading AFL Ladder...</p>
-</section>
+        <p>Loading AFL Ladder...</p>
+    </section>
 
-  <script type="module" src="script.js"></script>
-    
+    <script type="module" src="script.js"></script>
+
 </body>
 </html>
