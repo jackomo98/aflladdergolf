@@ -23,8 +23,7 @@ async function fetchAFLStandings() {
     try {
         console.log("📡 Fetching Live AFL Ladder...");
 
-        // ✅ Fetch ladder using the correct API
-        const response = await fetch("https://api.squiggle.com.au/?q=standings");
+        const response = await fetch("https://api.squiggle.com.au/?q=standings&year=2025");
         const data = await response.json();
 
         console.log("✅ AFL Ladder API Response:", data);
@@ -42,31 +41,27 @@ async function fetchAFLStandings() {
 // 📊 Display AFL Ladder
 function displayLadder(ladderData) {
     const ladderContainer = document.getElementById("liveLadder");
+
     if (!ladderContainer) {
-        console.error("⚠️ Ladder container not found!");
+        console.error("Ladder container not found!");
         return;
     }
 
-    // ✅ Sort teams by `rank`
-    const sortedLadder = ladderData.sort((a, b) => a.rank - b.rank);
+    // Clear existing ladder before reloading new data
+    ladderContainer.innerHTML = "";
 
-    // ✅ Ensure only 18 unique teams are displayed
-    const uniqueTeams = [];
-    const filteredLadder = sortedLadder.filter(team => {
-        if (!uniqueTeams.includes(team.team)) {
-            uniqueTeams.push(team.team);
-            return true;
-        }
-        return false;
-    });
+    ladderData
+        .sort((a, b) => a.rank - b.rank) // Ensure it's sorted by position
+        .forEach((team) => {
+            const row = document.createElement("tr");
 
-    // ✅ Update the table
-    ladderContainer.innerHTML = filteredLadder.map(team => `
-        <tr>
-            <td>${team.rank}</td>
-            <td>${team.team}</td>
-        </tr>
-    `).join('');
+            row.innerHTML = `
+                <td>${team.rank}</td>
+                <td>${team.name}</td>
+            `;
+
+            ladderContainer.appendChild(row);
+        });
 
     console.log("✅ Live AFL Ladder Updated");
 }
@@ -120,6 +115,6 @@ function loadLeaderboard() {
 
 // 🚀 Run functions on page load
 window.addEventListener("DOMContentLoaded", () => {
-    fetchAFLStandings();  // Load AFL ladder
-    loadLeaderboard();    // Load leaderboard from Firebase
+    fetchAFLStandings();
+    loadLeaderboard();  // Ensure leaderboard loads properly as well
 });
