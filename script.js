@@ -42,14 +42,34 @@ async function fetchAFLStandings() {
     }
 }
 
-// ✅ Display AFL Ladder on the page
 function displayLadder(ladderData) {
-    const ladderContainer = document.getElementById('liveLadder');
-
+    const ladderContainer = document.getElementById("liveLadder");
     if (!ladderContainer) {
-        console.error("❌ Ladder container not found!");
+        console.error("Ladder container not found!");
         return;
     }
+
+    // 🏆 Sort teams by rank (lowest to highest)
+    ladderData.sort((a, b) => a.rank - b.rank);
+
+    // 📝 Clear previous content
+    ladderContainer.innerHTML = "";
+
+    // 🎯 Loop through the sorted data and add it to the table
+    ladderData.forEach((team) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${team.rank}</td>
+            <td>${team.team}</td>
+            <td>${team.wins}</td>
+            <td>${team.losses}</td>
+            <td>${team.percentage.toFixed(2)}%</td>
+        `;
+        ladderContainer.appendChild(row);
+    });
+
+    console.log("✅ Live AFL Ladder Updated");
+}
 
     // Clear existing data
     ladderContainer.innerHTML = '';
