@@ -1,5 +1,5 @@
 // ✅ Treat this file as a module
-export { submitLadder, loadLeaderboard };
+export { submitPrediction, loadLeaderboard };
 
 // ✅ Import Firebase Modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
