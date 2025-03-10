@@ -18,56 +18,69 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 console.log("✅ Firebase Realtime Database Connected");
 
-// 🏆 Fetch Live AFL Ladder
+// 🏆 Fetch Live AFL Ladder from API-Sports
 async function fetchAFLStandings() {
+    const apiKey = "7f72c290ca65fc47aa2ad2ceeca07f23"; // Your API key
+    const leagueId = "1"; // AFL league ID (check API-Sports docs if needed)
+    const season = "2025"; // Current season
+
+    console.log("📡 Fetching Live AFL Ladder...");
+
     try {
-        console.log("📡 Fetching Live AFL Ladder...");
+        const response = await fetch(`https://v1.api-sports.io/afl/standings?league=${leagueId}&season=${season}`, {
+            method: "GET",
+            headers: {
+                "x-apisports-key": apiKey, // Auth key
+                "Accept": "application/json"
+            }
+        });
 
-        const response = await fetch("https://api.squiggle.com.au/?q=standings&year=2025");
-        const data = await response.json();
-
-        console.log("✅ AFL Ladder API Full Response:", data);
-
-        if (data && data.standings) {
-            console.log("🔍 Checking Standings Data:", data.standings); // Log standings array
-            displayLadder(data.standings);
-        } else {
-            console.error("⚠️ Invalid ladder data received:", data);
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
+
+        const data = await response.json();
+        console.log("✅ AFL Ladder API Response:", data);
+
+        if (data.response && data.response.length > 0) {
+            displayLadder(data.response[0].standings);
+        } else {
+            console.error("⚠ No ladder data found in response");
+        }
+
     } catch (error) {
         console.error("❌ Error fetching AFL ladder:", error);
     }
 }
 
-// 📊 Display AFL Ladder
-function displayLadder(ladderData) {
+// 📊 Display the Ladder on the Page
+function displayLadder(standings) {
     const ladderContainer = document.getElementById("liveLadder");
 
     if (!ladderContainer) {
-        console.error("Ladder container not found!");
+        console.error("⚠ Ladder container not found!");
         return;
     }
 
-    // Clear old ladder data
+    // Clear previous data
     ladderContainer.innerHTML = "";
 
-    ladderData
-        .sort((a, b) => a.rank - b.rank) // Ensure sorting by rank
-        .forEach((team) => {
-            console.log("🏈 Processing Team:", team); // Debugging log to check team object
-
-            const row = document.createElement("tr");
-
-            row.innerHTML = `
-                <td>${team.rank}</td>
-                <td>${team.name || team.team || team.full_name || "Unknown Team"}</td> <!-- Try different key names -->
-            `;
-
-            ladderContainer.appendChild(row);
-        });
+    standings.forEach((team, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${team.rank}</td>
+            <td>${team.team.name}</td>
+        `;
+        ladderContainer.appendChild(row);
+    });
 
     console.log("✅ Live AFL Ladder Updated");
 }
+
+// 🏁 Run functions on page load
+window.addEventListener("DOMContentLoaded", () => {
+    fetchAFLStandings(); // Load AFL Ladder
+});
 
 // 📩 Handle Player Submissions
 document.getElementById("submitPrediction").addEventListener("click", function () {
