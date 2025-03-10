@@ -1,8 +1,11 @@
+// ✅ Treat this file as a module
+export { submitLadder, loadLeaderboard };
+
 // ✅ Import Firebase Modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-// ✅ Firebase Configuration
+// ✅ Your Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAGk1YEUQ1iB0cWCnrvHInwSdPUQJYtFBw",
   authDomain: "afl-ladder-game.firebaseapp.com",
@@ -18,7 +21,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 console.log("✅ Firebase Connected");
 
-// ✅ AFL Teams List (for ranking)
+// ✅ AFL Teams List (For Player Predictions)
 const teams = [
     "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon",
     "Fremantle", "Geelong", "Gold Coast", "GWS", "Hawthorn",
@@ -28,8 +31,7 @@ const teams = [
 
 // ✅ Populate Drag-and-Drop Team Ranking List
 const teamRanking = document.getElementById("teamRanking");
-
-teams.forEach((team) => {
+teams.forEach(team => {
     const listItem = document.createElement("li");
     listItem.textContent = team;
     listItem.draggable = true;
@@ -53,7 +55,7 @@ teamRanking.addEventListener("dragover", (event) => {
     event.preventDefault();
     const draggingItem = document.querySelector(".dragging");
     const afterElement = getDragAfterElement(teamRanking, event.clientY);
-
+    
     if (afterElement == null) {
         teamRanking.appendChild(draggingItem);
     } else {
@@ -67,7 +69,7 @@ function getDragAfterElement(container, y) {
     return draggableElements.reduce((closest, child) => {
         const box = child.getBoundingClientRect();
         const offset = y - box.top - box.height / 2;
-
+        
         if (offset < 0 && offset > closest.offset) {
             return { offset: offset, element: child };
         } else {
@@ -76,8 +78,8 @@ function getDragAfterElement(container, y) {
     }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
-// 🏆 Handle Player Submission
-document.getElementById("submitPrediction").addEventListener("click", function () {
+// 🏅 Handle Player Submissions with **Accurate Scoring**
+async function submitPrediction() {
     const playerName = document.getElementById("playerName").value;
 
     if (!playerName) {
@@ -85,50 +87,96 @@ document.getElementById("submitPrediction").addEventListener("click", function (
         return;
     }
 
-    // Save player prediction
-    const playerRef = ref(db, "leaderboard/" + playerName);
-    set(playerRef, {
-        name: playerName,
-        points: Math.floor(Math.random() * 100) // Temporary score logic
-    });
+    // ✅ Get player's ranked teams from the list
+    const rankedTeams = Array.from(document.querySelectorAll("#teamRanking li"))
+        .map((li, index) => ({ name: li.textContent, predictedRank: index + 1 }));
 
-    alert("✅ Prediction submitted!");
-    loadLeaderboard();
-});
+    console.log("✅ Player Prediction:", rankedTeams);
 
-// 🏆 Load Leaderboard from Firebase
-function loadLeaderboard() {
-    console.log("📡 Fetching Player Leaderboard...");
-
-    const leaderboardRef = ref(db, "leaderboard");
-
-    onValue(leaderboardRef, (snapshot) => {
-        const leaderboardContainer = document.getElementById("leaderboard");
-        leaderboardContainer.innerHTML = "";
-
-        if (snapshot.exists()) {
-            let leaderboardData = [];
-            snapshot.forEach((childSnapshot) => {
-                leaderboardData.push(childSnapshot.val());
-            });
-
-            // Sort by lowest points (best rank)
-            leaderboardData.sort((a, b) => a.points - b.points);
-
-            leaderboardData.forEach((player, index) => {
-                const row = document.createElement("tr");
-                row.innerHTML = `<td>${index + 1}</td><td>${player.name}</td><td>${player.points}</td>`;
-                leaderboardContainer.appendChild(row);
-            });
-
-            console.log("✅ Leaderboard Updated");
-        } else {
-            console.warn("⚠ No leaderboard data found!");
+    try {
+        // ✅ Fetch the latest AFL ladder from the API
+        const response = await fetch("https://api.squiggle.com.au/?q=standings");
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
-    });
+
+        const data = await response.json();
+        if (!data.standings || data.standings.length === 0) {
+            console.error("⚠ No ladder data found!");
+            return;
+        }
+
+        const liveLadder = data.standings.map(team => ({
+            name: team.name,
+            actualRank: team.rank
+        }));
+
+        console.log("✅ Live AFL Ladder:", liveLadder);
+
+        // ✅ Calculate the player's score based on position differences
+        let totalScore = 0;
+        rankedTeams.forEach(predictedTeam => {
+            const actualTeam = liveLadder.find(team => team.name === predictedTeam.name);
+            if (actualTeam) {
+                totalScore += Math.abs(predictedTeam.predictedRank - actualTeam.actualRank);
+            }
+        });
+
+        console.log("🏆 Player Score:", totalScore);
+
+        // ✅ Save the player's score to Firebase
+        const playerRef = ref(db, "leaderboard/" + playerName);
+        set(playerRef, {
+            name: playerName,
+            points: totalScore
+        });
+
+        alert("✅ Prediction submitted!");
+        loadLeaderboard();
+    } catch (error) {
+        console.error("❌ Error fetching live ladder:", error);
+    }
 }
 
-// Load leaderboard when page loads
+// ✅ Attach the function to the submit button
+document.getElementById("submitPrediction").addEventListener("click", submitPrediction);
+
+// 🏆 Load Leaderboard from Firebase
+async function loadLeaderboard() {
+    console.log("📡 Fetching Player Leaderboard...");
+
+    try {
+        const leaderboardRef = ref(db, "leaderboard");
+        onValue(leaderboardRef, (snapshot) => {
+            const leaderboardContainer = document.getElementById("leaderboard");
+            leaderboardContainer.innerHTML = "";
+
+            if (snapshot.exists()) {
+                let leaderboardData = [];
+                snapshot.forEach((childSnapshot) => {
+                    leaderboardData.push(childSnapshot.val());
+                });
+
+                // ✅ Sort by lowest points (best rank)
+                leaderboardData.sort((a, b) => a.points - b.points);
+
+                leaderboardData.forEach((player, index) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `<td>${index + 1}</td><td>${player.name}</td><td>${player.points}</td>`;
+                    leaderboardContainer.appendChild(row);
+                });
+
+                console.log("✅ Leaderboard Updated");
+            } else {
+                console.warn("⚠ No leaderboard data found!");
+            }
+        });
+    } catch (error) {
+        console.error("❌ Error loading leaderboard:", error);
+    }
+}
+
+// ✅ Load leaderboard when page loads
 window.addEventListener("DOMContentLoaded", loadLeaderboard);
 
 // 🏆 Fetch Live AFL Ladder from Squiggle API
@@ -142,14 +190,12 @@ async function fetchAFLStandings() {
         }
 
         const data = await response.json();
-        console.log("✅ AFL Ladder API Response:", data);
-
-        if (data.standings && data.standings.length > 0) {
-            displayLadder(data.standings);
-        } else {
-            console.error("⚠ No ladder data found in response");
+        if (!data.standings || data.standings.length === 0) {
+            console.error("⚠ No ladder data found!");
+            return;
         }
 
+        displayLadder(data.standings);
     } catch (error) {
         console.error("❌ Error fetching AFL ladder:", error);
     }
@@ -164,15 +210,10 @@ function displayLadder(standings) {
         return;
     }
 
-    // Clear existing table
     ladderContainer.innerHTML = "";
-
-    standings.forEach((team) => {
+    standings.forEach(team => {
         const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${team.rank}</td>
-            <td>${team.name}</td>
-        `;
+        row.innerHTML = `<td>${team.rank}</td><td>${team.name}</td>`;
         ladderContainer.appendChild(row);
     });
 
