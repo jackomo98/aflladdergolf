@@ -39,20 +39,13 @@ async function fetchAFLStandings() {
 
 // 🎯 Display Live Ladder (Only Team Name + Rank)
 function displayLadder(ladderData) {
-    const ladderContainer = document.getElementById("liveLadder");
-    if (!ladderContainer) {
-        console.error("⚠️ Ladder container not found!");
-        return;
-    }
-
-    // 🏆 Sort teams by position
+    // Sort by position (ascending)
     ladderData.sort((a, b) => a.rank - b.rank);
 
-    // 📝 Clear previous content
-    ladderContainer.innerHTML = "";
+    const ladderContainer = document.getElementById("liveLadder");
+    ladderContainer.innerHTML = ""; // Clear previous content
 
-    // 🎯 Loop through teams and add them to the table
-    ladderData.forEach((team) => {
+    ladderData.forEach(team => {
         const row = document.createElement("tr");
         row.innerHTML = `
             <td>${team.rank}</td>
