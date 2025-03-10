@@ -21,7 +21,7 @@ console.log("✅ Firebase Realtime Database Connected");
 // 🏆 Fetch Live AFL Ladder from API-Sports
 async function fetchAFLStandings() {
     const apiKey = "7f72c290ca65fc47aa2ad2ceeca07f23"; // Your API key
-    const leagueId = "1"; // AFL league ID (check API-Sports docs if needed)
+    const leagueId = "1"; // AFL league ID (Check API-Sports Docs)
     const season = "2025"; // Current season
 
     console.log("📡 Fetching Live AFL Ladder...");
@@ -30,7 +30,7 @@ async function fetchAFLStandings() {
         const response = await fetch(`https://v1.api-sports.io/afl/standings?league=${leagueId}&season=${season}`, {
             method: "GET",
             headers: {
-                "x-apisports-key": apiKey, // Auth key
+                "x-apisports-key": apiKey, // API Key for Authentication
                 "Accept": "application/json"
             }
         });
@@ -42,6 +42,7 @@ async function fetchAFLStandings() {
         const data = await response.json();
         console.log("✅ AFL Ladder API Response:", data);
 
+        // Check if we got standings data
         if (data.response && data.response.length > 0) {
             displayLadder(data.response[0].standings);
         } else {
@@ -81,7 +82,6 @@ function displayLadder(standings) {
 window.addEventListener("DOMContentLoaded", () => {
     fetchAFLStandings(); // Load AFL Ladder
 });
-
 // 📩 Handle Player Submissions
 document.getElementById("submitPrediction").addEventListener("click", function () {
     const playerName = document.getElementById("playerName").value;
