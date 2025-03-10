@@ -94,17 +94,20 @@ function displayLadder(ladderData) {
 
 // ✅ Load Player Leaderboard from Firebase
 function loadLeaderboard() {
-    console.log("⏳ Fetching Player Leaderboard...");
+    console.log("📡 Fetching Player Leaderboard...");
 
-    // Firebase code (if used) to fetch leaderboard data
-    // Example: Fetch data from Firebase Realtime Database
-    firebase.database().ref('leaderboard').once('value', snapshot => {
-        const leaderboard = snapshot.val();
-        if (leaderboard) {
-            displayLeaderboard(leaderboard);
+    const leaderboardRef = ref(db, "leaderboard");
+
+    onValue(leaderboardRef, (snapshot) => {
+        console.log("🔍 Snapshot Data:", snapshot.val()); // Debugging line
+        
+        if (snapshot.exists()) {
+            const leaderboardData = snapshot.val();
+            updateLeaderboard(leaderboardData);
+            console.log("✅ Leaderboard Updated", leaderboardData);
+        } else {
+            console.warn("⚠️ No leaderboard data found");
         }
-    }).catch(error => {
-        console.error("❌ Error fetching leaderboard:", error);
     });
 }
 
