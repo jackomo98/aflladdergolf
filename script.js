@@ -1,4 +1,3 @@
-
 // ✅ Import Firebase Modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -92,81 +91,59 @@ async function submitLadder() {
     }
 }
 
-// ✅ Load Leaderboard from Realtime Database
-function loadLeaderboard() {
+// ✅ Function to Load Leaderboard & Calculate Scores
+async function loadLeaderboard() {
     const leaderboardRef = ref(db, "predictions");
     const tbody = document.getElementById('leaderboard');
     tbody.innerHTML = ''; // Clear old data
 
+    // Fetch latest AFL ladder
+    let actualLadder = [];
+    try {
+        const response = await fetch("https://api.squiggle.com.au/?q=ladder");
+        const data = await response.json();
+        actualLadder = data.ladder.map(team => team.name);
+    } catch (error) {
+        console.error("❌ Error fetching AFL Ladder:", error);
+        return;
+    }
+
+    // Get player predictions
     onValue(leaderboardRef, (snapshot) => {
-        tbody.innerHTML = ''; // Clear previous data before updating
+        let scores = [];
+
         snapshot.forEach((childSnapshot) => {
             const data = childSnapshot.val();
-            const row = document.createElement("tr");
+            const name = data.name;
+            const prediction = data.prediction.map(item => item.team);
 
-            row.innerHTML = `<td>${data.name}</td><td>${JSON.stringify(data.prediction)}</td>`;
+            // Calculate score (1 point per position difference)
+            let score = 0;
+            prediction.forEach((team, index) => {
+                const actualPosition = actualLadder.indexOf(team);
+                if (actualPosition !== -1) {
+                    score += Math.abs(actualPosition - index);
+                }
+            });
+
+            scores.push({ name, score });
+        });
+
+        // Sort by lowest score (best prediction first)
+        scores.sort((a, b) => a.score - b.score);
+
+        // Render leaderboard
+        tbody.innerHTML = "";
+        scores.forEach((player, index) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `<td>${index + 1}</td><td>${player.name}</td><td>${player.score}</td>`;
             tbody.appendChild(row);
         });
 
-        console.log("✅ Leaderboard Loaded Successfully");
+        console.log("✅ Leaderboard Updated");
     });
 }
 
 // ✅ Attach functions to `window` so `game.html` can access them
 window.submitLadder = submitLadder;
 window.loadLeaderboard = loadLeaderboard;
-// ✅ Squiggle API for Live AFL Ladder & Fixtures
-const SQUIGGLE_API_LADDER = "https://api.squiggle.com.au/?q=ladder";
-const SQUIGGLE_API_FIXTURES = "https://api.squiggle.com.au/?q=games;year=2025;round=NEXT";
-
-// ✅ Function to Fetch & Update the Live AFL Ladder
-async function loadLiveLadder() {
-    try {
-        const response = await fetch(SQUIGGLE_API_LADDER);
-        const data = await response.json();
-        const tbody = document.getElementById('liveLadder');
-        tbody.innerHTML = ''; // Clear old ladder
-
-        data.ladder.forEach(team => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${team.rank}</td>
-                <td>${team.name}</td>
-                <td>${team.wins}</td>
-                <td>${team.losses}</td>
-                <td>${!isNaN(team.percentage) ? Number(team.percentage).toFixed(2) : "N/A"}%</td>
-            `;
-            tbody.appendChild(row);
-        });
-
-        console.log("✅ Live AFL Ladder Updated");
-    } catch (error) {
-        console.error("❌ Error fetching AFL Ladder:", error);
-    }
-}
-
-// ✅ Function to Fetch & Update Next Round Fixtures
-async function loadNextRoundFixtures() {
-    try {
-        const response = await fetch(SQUIGGLE_API_FIXTURES);
-        const data = await response.json();
-        const fixtureList = document.getElementById("fixture-list");
-        fixtureList.innerHTML = '';
-
-        data.games.forEach(game => {
-            fixtureList.innerHTML += `<li>${game.hteam} vs ${game.ateam} - ${game.date}</li>`;
-        });
-
-        console.log("✅ Next Round Fixtures Updated");
-    } catch (error) {
-        console.error("❌ Error fetching fixtures:", error);
-    }
-}
-
-// ✅ Load Live Ladder & Fixtures on Page Load
-loadLiveLadder();
-loadNextRoundFixtures();
-
-// ✅ Refresh every 60 seconds (1 minute)
-setInterval(loadLiveLadder, 60000);
-setInterval(loadNextRoundFixtures, 60000);
