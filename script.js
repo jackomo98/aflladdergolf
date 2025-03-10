@@ -1,9 +1,8 @@
-
 // ✅ Import Firebase Modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-// ✅ Your Firebase Configuration (Replace with actual values)
+// ✅ Your Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAGk1YEUQ1iB0cWCnrvHInwSdPUQJYtFBw",
   authDomain: "afl-ladder-game.firebaseapp.com",
@@ -19,15 +18,11 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 console.log("✅ Firebase Realtime Database Connected");
 
-// Ensure Firebase is initialized (if using Firebase)
-console.log("🔥 Firebase Realtime Database Connecting...");
-
-// ✅ Load Live AFL Ladder from Squiggle API
+// 🏆 Fetch Live AFL Ladder
 async function fetchAFLStandings() {
     try {
-        console.log("⏳ Fetching Live AFL Ladder...");
-
-        const response = await fetch('https://api.squiggle.com.au/?q=ladder');
+        console.log("📡 Fetching Live AFL Ladder...");
+        const response = await fetch("https://api.squiggle.com.au/?q=ladder");
         const data = await response.json();
 
         console.log("✅ AFL Ladder API Response:", data);
@@ -35,35 +30,33 @@ async function fetchAFLStandings() {
         if (data && data.ladder) {
             displayLadder(data.ladder);
         } else {
-            console.error("❌ Invalid ladder data received:", data);
+            console.error("⚠️ Invalid ladder data received:", data);
         }
     } catch (error) {
         console.error("❌ Error fetching AFL ladder:", error);
     }
 }
 
+// 🎯 Display Live Ladder (Only Team Name + Rank)
 function displayLadder(ladderData) {
     const ladderContainer = document.getElementById("liveLadder");
     if (!ladderContainer) {
-        console.error("Ladder container not found!");
+        console.error("⚠️ Ladder container not found!");
         return;
     }
 
-    // 🏆 Sort teams by rank (lowest to highest)
+    // 🏆 Sort teams by position
     ladderData.sort((a, b) => a.rank - b.rank);
 
     // 📝 Clear previous content
     ladderContainer.innerHTML = "";
 
-    // 🎯 Loop through the sorted data and add it to the table
+    // 🎯 Loop through teams and add them to the table
     ladderData.forEach((team) => {
         const row = document.createElement("tr");
         row.innerHTML = `
             <td>${team.rank}</td>
             <td>${team.team}</td>
-            <td>${team.wins}</td>
-            <td>${team.losses}</td>
-            <td>${team.percentage.toFixed(2)}%</td>
         `;
         ladderContainer.appendChild(row);
     });
@@ -71,36 +64,13 @@ function displayLadder(ladderData) {
     console.log("✅ Live AFL Ladder Updated");
 }
 
-    // Clear existing data
-    ladderContainer.innerHTML = '';
-
-    // ✅ Loop through the top 18 teams only
-    ladderData.slice(0, 18).forEach(team => {
-        const row = document.createElement('tr');
-
-        row.innerHTML = `
-            <td>${team.rank}</td>
-            <td>${team.team || "Unknown"}</td>
-            <td>${team.wins || 0}</td>
-            <td>${team.losses || 0}</td>
-            <td>${team.percentage ? parseFloat(team.percentage).toFixed(2) + "%" : "N/A"}</td>
-        `;
-
-        ladderContainer.appendChild(row);
-    });
-
-    console.log("✅ Live AFL Ladder Updated");
-}
-
-// ✅ Load Player Leaderboard from Firebase
+// 🔥 Load Leaderboard from Firebase
 function loadLeaderboard() {
     console.log("📡 Fetching Player Leaderboard...");
 
     const leaderboardRef = ref(db, "leaderboard");
 
     onValue(leaderboardRef, (snapshot) => {
-        console.log("🔍 Snapshot Data:", snapshot.val()); // Debugging line
-        
         if (snapshot.exists()) {
             const leaderboardData = snapshot.val();
             updateLeaderboard(leaderboardData);
@@ -111,40 +81,54 @@ function loadLeaderboard() {
     });
 }
 
-// ✅ Display Player Leaderboard on the page
-function displayLeaderboard(leaderboardData) {
-    const leaderboardContainer = document.getElementById('leaderboard');
-
+// 📌 Update Leaderboard UI
+function updateLeaderboard(data) {
+    const leaderboardContainer = document.getElementById("leaderboard");
     if (!leaderboardContainer) {
-        console.error("❌ Leaderboard container not found!");
+        console.error("⚠️ Leaderboard container not found!");
         return;
     }
 
-    // Clear existing data
-    leaderboardContainer.innerHTML = '';
+    leaderboardContainer.innerHTML = "";
 
-    // ✅ Sort by lowest score (best rank)
-    const sortedPlayers = Object.entries(leaderboardData)
-        .map(([name, score]) => ({ name, score }))
-        .sort((a, b) => a.score - b.score);
+    // 🔄 Convert Object to Array & Sort by Score (Lowest = Best)
+    const sortedPlayers = Object.entries(data).map(([key, value]) => ({
+        name: value.name,
+        points: value.points || 0,
+    })).sort((a, b) => a.points - b.points);
 
     sortedPlayers.forEach((player, index) => {
-        const row = document.createElement('tr');
-
+        const row = document.createElement("tr");
         row.innerHTML = `
             <td>${index + 1}</td>
             <td>${player.name}</td>
-            <td>${player.score}</td>
+            <td>${player.points}</td>
         `;
-
         leaderboardContainer.appendChild(row);
     });
-
-    console.log("✅ Leaderboard Updated");
 }
 
-// ✅ Run functions when the page loads
+// 🏆 Handle Player Submissions
+document.getElementById("submitPrediction").addEventListener("click", function () {
+    const playerName = document.getElementById("playerName").value;
+    if (!playerName) {
+        alert("⚠️ Please enter your name!");
+        return;
+    }
+
+    // 📝 Save player prediction (Placeholder for now)
+    const playerRef = ref(db, "leaderboard/" + playerName);
+    set(playerRef, {
+        name: playerName,
+        points: Math.floor(Math.random() * 100) // Placeholder for score logic
+    });
+
+    alert("✅ Prediction submitted!");
+    loadLeaderboard();
+});
+
+// 🔄 Run functions on page load
 window.addEventListener("DOMContentLoaded", () => {
-    fetchAFLStandings();   // Load AFL ladder
-    loadLeaderboard();      // Load player leaderboard from Firebase
+    fetchAFLStandings();  // Load AFL ladder
+    loadLeaderboard();    // Load leaderboard from Firebase
 });
