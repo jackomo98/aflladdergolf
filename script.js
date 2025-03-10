@@ -1,22 +1,22 @@
-// ✅ Firebase Imports (Ensure only one initialization)
+// ✅ Import Firebase Modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-// ✅ Prevent re-initialization of Firebase
-if (!window.firebaseApp) {
-    const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "your-project.firebaseapp.com",
-        projectId: "your-project-id",
-        storageBucket: "your-project.appspot.com",
-        messagingSenderId: "your-messaging-id",
-        appId: "your-app-id"
-    };
+// ✅ Your Firebase Configuration (Replace with actual values)
+const firebaseConfig = {
+  apiKey: "AIzaSyAGk1YEUQ1iB0cWCnrvHInwSdPUQJYtFBw",
+  authDomain: "afl-ladder-game.firebaseapp.com",
+  databaseURL: "https://afl-ladder-game-default-rtdb.firebaseio.com",
+  projectId: "afl-ladder-game",
+  storageBucket: "afl-ladder-game.firebasestorage.app",
+  messagingSenderId: "779608521804",
+  appId: "1:779608521804:web:8c92c138dd2e61fa5688e9"
+};
 
-    window.firebaseApp = initializeApp(firebaseConfig);
-    window.db = getFirestore(window.firebaseApp);
-    console.log("✅ Firebase Initialized Successfully");
-}
+// ✅ Initialize Firebase Realtime Database
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+console.log("✅ Firebase Realtime Database Connected");
 
 // ✅ AFL Teams List (For Ranking)
 const teams = [
@@ -63,7 +63,7 @@ function updateRankNumbers() {
 // ✅ Initialize the Ranking List
 updateRankingList();
 
-// ✅ Submit Ladder Prediction to Firebase
+// ✅ Submit Ladder Prediction to Realtime Database
 async function submitLadder() {
     const playerName = document.getElementById("playerName").value.trim();
     if (!playerName) {
@@ -77,10 +77,11 @@ async function submitLadder() {
     });
 
     try {
-        await addDoc(collection(window.db, "predictions"), {
+        const newPredictionRef = push(ref(db, "predictions"));
+        await set(newPredictionRef, {
             name: playerName,
             prediction,
-            timestamp: new Date()
+            timestamp: new Date().toISOString()
         });
 
         alert("✅ Prediction saved!");
@@ -90,15 +91,16 @@ async function submitLadder() {
     }
 }
 
-// ✅ Load Leaderboard from Firebase
-async function loadLeaderboard() {
+// ✅ Load Leaderboard from Realtime Database
+function loadLeaderboard() {
+    const leaderboardRef = ref(db, "predictions");
     const tbody = document.getElementById('leaderboard');
     tbody.innerHTML = ''; // Clear old data
 
-    try {
-        const querySnapshot = await getDocs(collection(window.db, "predictions"));
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
+    onValue(leaderboardRef, (snapshot) => {
+        tbody.innerHTML = ''; // Clear previous data before updating
+        snapshot.forEach((childSnapshot) => {
+            const data = childSnapshot.val();
             const row = document.createElement("tr");
 
             row.innerHTML = `<td>${data.name}</td><td>${JSON.stringify(data.prediction)}</td>`;
@@ -106,11 +108,9 @@ async function loadLeaderboard() {
         });
 
         console.log("✅ Leaderboard Loaded Successfully");
-    } catch (error) {
-        console.error("❌ Error loading leaderboard:", error);
-    }
+    });
 }
 
-// ✅ Attach functions to `window` so they can be used in HTML
+// ✅ Attach functions to `window` so `game.html` can access them
 window.submitLadder = submitLadder;
 window.loadLeaderboard = loadLeaderboard;
