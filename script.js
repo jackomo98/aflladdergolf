@@ -64,13 +64,23 @@ function loadLeaderboard() {
     const leaderboardRef = ref(db, "leaderboard");
 
     onValue(leaderboardRef, (snapshot) => {
-        if (snapshot.exists()) {
-            const leaderboardData = snapshot.val();
-            updateLeaderboard(leaderboardData);
-            console.log("✅ Leaderboard Updated", leaderboardData);
-        } else {
-            console.warn("⚠️ No leaderboard data found");
+        const leaderboard = snapshot.val();
+        const leaderboardContainer = document.getElementById("leaderboard");
+
+        if (!leaderboard) {
+            console.warn("⚠️ No leaderboard data found!");
+            return;
         }
+
+        leaderboardContainer.innerHTML = ""; // Clear previous data
+
+        Object.entries(leaderboard).forEach(([player, score]) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `<td>${player}</td><td>${score}</td>`;
+            leaderboardContainer.appendChild(row);
+        });
+
+        console.log("✅ Leaderboard Updated");
     });
 }
 
