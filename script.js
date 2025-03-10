@@ -29,6 +29,7 @@ async function fetchAFLStandings() {
         console.log("✅ AFL Ladder API Response:", data);
 
         if (data && data.standings) {
+            console.log("🔍 Checking Standings Data:", data.standings); // Log standings array
             displayLadder(data.standings);
         } else {
             console.error("⚠️ Invalid ladder data received:", data);
@@ -47,17 +48,19 @@ function displayLadder(ladderData) {
         return;
     }
 
-    // Clear existing ladder before reloading new data
+    // Clear old ladder data
     ladderContainer.innerHTML = "";
 
     ladderData
-        .sort((a, b) => a.rank - b.rank) // Ensure it's sorted by position
+        .sort((a, b) => a.rank - b.rank) // Sort by position
         .forEach((team) => {
+            console.log("🏈 Processing Team:", team); // Debugging log
+
             const row = document.createElement("tr");
 
             row.innerHTML = `
                 <td>${team.rank}</td>
-                <td>${team.name}</td>
+                <td>${team.name || team.team || "Unknown Team"}</td> <!-- Try different key names -->
             `;
 
             ladderContainer.appendChild(row);
