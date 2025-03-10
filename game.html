@@ -13,17 +13,20 @@
     <!-- Rank AFL Teams -->
     <h2>Rank AFL Teams</h2>
     <input type="text" id="playerName" placeholder="Enter your name">
-    <ul id="teamRanking" class="ranking-list"></ul>
-    <button onclick="submitLadder()">Submit Prediction</button>
+    
+    <div class="ranking-container">
+        <ul id="teamRanking" class="ranking-list"></ul>
+    </div>
+    
+    <button onclick="window.submitLadder()">Submit Prediction</button>
 
     <!-- Leaderboard -->
     <h2>Leaderboard</h2>
     <table>
         <thead>
             <tr>
-                <th>Rank</th>
                 <th>Player</th>
-                <th>Score (Lower is Better)</th>
+                <th>Prediction</th>
             </tr>
         </thead>
         <tbody id="leaderboard"></tbody>
@@ -48,7 +51,7 @@
     <h2>Next Round in AFL</h2>
     <ul id="fixture-list">Loading...</ul>
 
-<script type="module" src="script.js"></script>
+    <script type="module" src="script.js"></script>
 
 </body>
 </html>
