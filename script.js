@@ -246,6 +246,6 @@ function displayLadder(ladderData) {
 
 // Run function when the page loads
 window.addEventListener("DOMContentLoaded", () => {
-    fetchAFLStandings(); // Load AFL ladder
-    loadLeaderboard();   // Load player leaderboard from Firebase ✅ Fixed!
-}
+    fetchAFLStandings();
+    loadLeaderboard();
+});
