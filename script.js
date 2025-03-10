@@ -1,3 +1,4 @@
+
 // ✅ Import Firebase Modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -114,3 +115,58 @@ function loadLeaderboard() {
 // ✅ Attach functions to `window` so `game.html` can access them
 window.submitLadder = submitLadder;
 window.loadLeaderboard = loadLeaderboard;
+// ✅ Squiggle API for Live AFL Ladder & Fixtures
+const SQUIGGLE_API_LADDER = "https://api.squiggle.com.au/?q=ladder";
+const SQUIGGLE_API_FIXTURES = "https://api.squiggle.com.au/?q=games;year=2025;round=NEXT";
+
+// ✅ Function to Fetch & Update the Live AFL Ladder
+async function loadLiveLadder() {
+    try {
+        const response = await fetch(SQUIGGLE_API_LADDER);
+        const data = await response.json();
+        const tbody = document.getElementById('liveLadder');
+        tbody.innerHTML = ''; // Clear old ladder
+
+        data.ladder.forEach(team => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${team.rank}</td>
+                <td>${team.name}</td>
+                <td>${team.wins}</td>
+                <td>${team.losses}</td>
+                <td>${team.percentage ? team.percentage.toFixed(2) : "N/A"}%</td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        console.log("✅ Live AFL Ladder Updated");
+    } catch (error) {
+        console.error("❌ Error fetching AFL Ladder:", error);
+    }
+}
+
+// ✅ Function to Fetch & Update Next Round Fixtures
+async function loadNextRoundFixtures() {
+    try {
+        const response = await fetch(SQUIGGLE_API_FIXTURES);
+        const data = await response.json();
+        const fixtureList = document.getElementById("fixture-list");
+        fixtureList.innerHTML = '';
+
+        data.games.forEach(game => {
+            fixtureList.innerHTML += `<li>${game.hteam} vs ${game.ateam} - ${game.date}</li>`;
+        });
+
+        console.log("✅ Next Round Fixtures Updated");
+    } catch (error) {
+        console.error("❌ Error fetching fixtures:", error);
+    }
+}
+
+// ✅ Load Live Ladder & Fixtures on Page Load
+loadLiveLadder();
+loadNextRoundFixtures();
+
+// ✅ Refresh every 60 seconds (1 minute)
+setInterval(loadLiveLadder, 60000);
+setInterval(loadNextRoundFixtures, 60000);
