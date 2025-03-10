@@ -202,6 +202,8 @@ async function fetchAFLStandings() {
         const response = await fetch('https://api.squiggle.com.au/?q=ladder');
         const data = await response.json();
 
+ console.log("AFL Ladder API Response:", data);
+      
         if (data && data.ladder) {
             displayLadder(data.ladder);
         } else {
