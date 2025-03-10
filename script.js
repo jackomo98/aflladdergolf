@@ -1,16 +1,16 @@
 // ✅ Import Firebase Modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 // ✅ Your Firebase Configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyAGk1YEUQ1iB0cWCnrvHInwSdPUQJYtFBw",
-  authDomain: "afl-ladder-game.firebaseapp.com",
-  databaseURL: "https://afl-ladder-game-default-rtdb.firebaseio.com",
-  projectId: "afl-ladder-game",
-  storageBucket: "afl-ladder-game.firebasestorage.app",
-  messagingSenderId: "779608521804",
-  appId: "1:779608521804:web:8c92c138dd2e61fa5688e9"
+    apiKey: "AIzaSyAGk1YEUQ1iB0cWCnrvHInwSdPUQJYtFBw",
+    authDomain: "afl-ladder-game.firebaseapp.com",
+    databaseURL: "https://afl-ladder-game-default-rtdb.firebaseio.com",
+    projectId: "afl-ladder-game",
+    storageBucket: "afl-ladder-game.appspot.com",
+    messagingSenderId: "779608521804",
+    appId: "1:779608521804:web:8c92c138dd2e61fa5688e9"
 };
 
 // ✅ Initialize Firebase Realtime Database
@@ -21,7 +21,7 @@ console.log("✅ Firebase Realtime Database Connected");
 // 🏆 Fetch Live AFL Ladder
 async function fetchAFLStandings() {
     try {
-        console.log("📡 Fetching Live AFL Ladder...");
+        console.log("🕵️ Fetching Live AFL Ladder...");
         const response = await fetch("https://api.squiggle.com.au/?q=ladder");
         const data = await response.json();
 
@@ -37,15 +37,19 @@ async function fetchAFLStandings() {
     }
 }
 
-// 🎯 Display Live Ladder (Only Team Name + Rank)
+// 📊 Display AFL Ladder
 function displayLadder(ladderData) {
-    // Sort by position (ascending)
-    ladderData.sort((a, b) => a.rank - b.rank);
-
     const ladderContainer = document.getElementById("liveLadder");
+    if (!ladderContainer) {
+        console.error("❌ Ladder container not found!");
+        return;
+    }
+
     ladderContainer.innerHTML = ""; // Clear previous content
 
-    ladderData.forEach(team => {
+    ladderData.sort((a, b) => a.rank - b.rank); // Ensure correct ranking order
+
+    ladderData.forEach((team) => {
         const row = document.createElement("tr");
         row.innerHTML = `
             <td>${team.rank}</td>
@@ -57,61 +61,7 @@ function displayLadder(ladderData) {
     console.log("✅ Live AFL Ladder Updated");
 }
 
-// 🔥 Load Leaderboard from Firebase
-function loadLeaderboard() {
-    console.log("📡 Fetching Player Leaderboard...");
-
-    const leaderboardRef = ref(db, "leaderboard");
-
-    onValue(leaderboardRef, (snapshot) => {
-        const leaderboard = snapshot.val();
-        const leaderboardContainer = document.getElementById("leaderboard");
-
-        if (!leaderboard) {
-            console.warn("⚠️ No leaderboard data found!");
-            return;
-        }
-
-        leaderboardContainer.innerHTML = ""; // Clear previous data
-
-        Object.entries(leaderboard).forEach(([player, score]) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `<td>${player}</td><td>${score}</td>`;
-            leaderboardContainer.appendChild(row);
-        });
-
-        console.log("✅ Leaderboard Updated");
-    });
-}
-
-// 📌 Update Leaderboard UI
-function updateLeaderboard(data) {
-    const leaderboardContainer = document.getElementById("leaderboard");
-    if (!leaderboardContainer) {
-        console.error("⚠️ Leaderboard container not found!");
-        return;
-    }
-
-    leaderboardContainer.innerHTML = "";
-
-    // 🔄 Convert Object to Array & Sort by Score (Lowest = Best)
-    const sortedPlayers = Object.entries(data).map(([key, value]) => ({
-        name: value.name,
-        points: value.points || 0,
-    })).sort((a, b) => a.points - b.points);
-
-    sortedPlayers.forEach((player, index) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${player.name}</td>
-            <td>${player.points}</td>
-        `;
-        leaderboardContainer.appendChild(row);
-    });
-}
-
-// 🏆 Handle Player Submissions
+// 📩 Handle Player Submissions
 document.getElementById("submitPrediction").addEventListener("click", function () {
     const playerName = document.getElementById("playerName").value;
     if (!playerName) {
@@ -119,7 +69,7 @@ document.getElementById("submitPrediction").addEventListener("click", function (
         return;
     }
 
-    // 📝 Save player prediction (Placeholder for now)
+    // Placeholder logic: Save player prediction
     const playerRef = ref(db, "leaderboard/" + playerName);
     set(playerRef, {
         name: playerName,
@@ -130,7 +80,35 @@ document.getElementById("submitPrediction").addEventListener("click", function (
     loadLeaderboard();
 });
 
-// 🔄 Run functions on page load
+// 🏆 Load Leaderboard
+function loadLeaderboard() {
+    console.log("📡 Fetching Player Leaderboard...");
+    const leaderboardRef = ref(db, "leaderboard");
+
+    onValue(leaderboardRef, (snapshot) => {
+        const leaderboardContainer = document.getElementById("leaderboard");
+        if (!leaderboardContainer) {
+            console.error("❌ Leaderboard container not found!");
+            return;
+        }
+
+        leaderboardContainer.innerHTML = ""; // Clear existing content
+
+        const players = snapshot.val();
+        if (players) {
+            const sortedPlayers = Object.values(players).sort((a, b) => a.points - b.points);
+            sortedPlayers.forEach((player, index) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `<td>${index + 1}</td><td>${player.name}</td><td>${player.points}</td>`;
+                leaderboardContainer.appendChild(row);
+            });
+        }
+
+        console.log("✅ Leaderboard Updated");
+    });
+}
+
+// 🚀 Run functions on page load
 window.addEventListener("DOMContentLoaded", () => {
     fetchAFLStandings();  // Load AFL ladder
     loadLeaderboard();    // Load leaderboard from Firebase
