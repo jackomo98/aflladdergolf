@@ -147,12 +147,24 @@ async function loadLeaderboard() {
 // ✅ Function to Fetch & Update the Live AFL Ladder
 async function loadLiveLadder() {
     try {
+        console.log("Fetching live AFL ladder...");
         const response = await fetch("https://api.squiggle.com.au/?q=ladder");
+        
+        if (!response.ok) {
+            throw new Error("Failed to fetch AFL Ladder");
+        }
+
         const data = await response.json();
+        
+        // Ensure the ladder data exists and is an array
+        if (!data.ladder || !Array.isArray(data.ladder)) {
+            throw new Error("Invalid ladder data received");
+        }
+
         const tbody = document.getElementById('liveLadder');
         tbody.innerHTML = ''; // Clear old ladder
 
-        data.ladder.forEach(team => {
+        data.ladder.forEach((team) => {
             const row = document.createElement("tr");
             row.innerHTML = `
                 <td>${team.rank}</td>
@@ -169,6 +181,15 @@ async function loadLiveLadder() {
         console.error("❌ Error fetching AFL Ladder:", error);
     }
 }
+
+// ✅ Load Live Ladder on Page Load
+loadLiveLadder();
+
+// ✅ Refresh Ladder Every 60 Seconds
+setInterval(loadLiveLadder, 60000);
+
+// ✅ Ensure Function is Accessible in `game.html`
+window.loadLiveLadder = loadLiveLadder;
 
 // ✅ Attach functions to `window` so `game.html` can access them
 window.submitLadder = submitLadder;
