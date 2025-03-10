@@ -134,7 +134,7 @@ async function loadLiveLadder() {
                 <td>${team.name}</td>
                 <td>${team.wins}</td>
                 <td>${team.losses}</td>
-                <td>${team.percentage ? team.percentage.toFixed(2) : "N/A"}%</td>
+                <td>${!isNaN(team.percentage) ? Number(team.percentage).toFixed(2) : "N/A"}%</td>
             `;
             tbody.appendChild(row);
         });
