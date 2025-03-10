@@ -23,14 +23,14 @@ async function fetchAFLStandings() {
     try {
         console.log("📡 Fetching Live AFL Ladder...");
 
-        // ✅ Make sure we're fetching the **2025** season ladder from Squiggle API
-        const response = await fetch("https://api.squiggle.com.au/?q=ladder&year=2025");
+        // ✅ Fetch ladder using the correct API
+        const response = await fetch("https://api.squiggle.com.au/?q=standings");
         const data = await response.json();
 
         console.log("✅ AFL Ladder API Response:", data);
 
-        if (data && data.ladder) {
-            displayLadder(data.ladder);
+        if (data && data.standings) {
+            displayLadder(data.standings);
         } else {
             console.error("⚠️ Invalid ladder data received:", data);
         }
