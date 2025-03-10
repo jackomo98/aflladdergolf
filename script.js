@@ -213,27 +213,31 @@ async function fetchAFLStandings() {
 }
 
 function displayLadder(ladderData) {
-    const ladderContainer = document.getElementById('liveLadder');
+    const ladderContainer = document.getElementById("liveLadder");
 
     if (!ladderContainer) {
         console.error("Ladder container not found!");
         return;
     }
 
-    // Ensure only 18 teams are shown
-    const trimmedData = ladderData.slice(0, 18);
+    // Clear previous data
+    ladderContainer.innerHTML = "";
 
-    ladderContainer.innerHTML = trimmedData
+    // Ensure only 18 teams are shown
+    const teams = ladderData.slice(0, 18);
+
+    // Populate the ladder table
+    ladderContainer.innerHTML = teams
         .map(team => `
             <tr>
                 <td>${team.rank}</td>
-                <td>${team.team.name}</td>
-                <td>${team.wins}</td>
-                <td>${team.losses}</td>
-                <td>${team.percentage.toFixed(2)}%</td>
+                <td>${team.team || "Unknown Team"}</td>
+                <td>${team.wins || 0}</td>
+                <td>${team.losses || 0}</td>
+                <td>${parseFloat(team.percentage) ? parseFloat(team.percentage).toFixed(2) + "%" : "N/A"}</td>
             </tr>
         `)
-        .join('');
+        .join("");
 }
 
 // Run function when the page loads
