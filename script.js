@@ -144,6 +144,33 @@ async function loadLeaderboard() {
     });
 }
 
+// ✅ Function to Fetch & Update the Live AFL Ladder
+async function loadLiveLadder() {
+    try {
+        const response = await fetch("https://api.squiggle.com.au/?q=ladder");
+        const data = await response.json();
+        const tbody = document.getElementById('liveLadder');
+        tbody.innerHTML = ''; // Clear old ladder
+
+        data.ladder.forEach(team => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${team.rank}</td>
+                <td>${team.name}</td>
+                <td>${team.wins}</td>
+                <td>${team.losses}</td>
+                <td>${!isNaN(Number(team.percentage)) ? Number(team.percentage).toFixed(2) : "N/A"}%</td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        console.log("✅ Live AFL Ladder Updated");
+    } catch (error) {
+        console.error("❌ Error fetching AFL Ladder:", error);
+    }
+}
+
 // ✅ Attach functions to `window` so `game.html` can access them
 window.submitLadder = submitLadder;
 window.loadLeaderboard = loadLeaderboard;
+window.loadLiveLadder = loadLiveLadder;
