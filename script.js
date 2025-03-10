@@ -163,6 +163,8 @@ async function fetchAFLStandings() {
     } catch (error) {
         console.error("❌ Error fetching AFL ladder:", error);
     }
+} // <-- ✅ Fixed missing closing bracket
+
 // 📊 Display Ladder on Page
 function displayLadder(standings) {
     const ladderContainer = document.getElementById("liveLadder");
