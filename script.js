@@ -199,12 +199,14 @@ window.loadLiveLadder = loadLiveLadder;
 
 async function fetchAFLStandings() {
     try {
+        console.log("Fetching live AFL ladder...");
+
         const response = await fetch('https://api.squiggle.com.au/?q=ladder');
         const data = await response.json();
 
- console.log("AFL Ladder API Response:", data);
-      
-        if (data && data.ladder) {
+        console.log("AFL Ladder API Response:", data); // Check the structure of the response
+
+        if (data && data.ladder && Array.isArray(data.ladder)) {
             displayLadder(data.ladder);
         } else {
             console.error("Invalid ladder data received:", data);
@@ -212,8 +214,7 @@ async function fetchAFLStandings() {
     } catch (error) {
         console.error("Error fetching AFL ladder:", error);
     }
-}
-
+  
 function displayLadder(ladderData) {
     const ladderContainer = document.getElementById("liveLadder");
 
@@ -222,24 +223,24 @@ function displayLadder(ladderData) {
         return;
     }
 
-    // Clear previous data
+    // Clear previous ladder data
     ladderContainer.innerHTML = "";
 
-    // Ensure only 18 teams are shown
-    const teams = ladderData.slice(0, 18);
+    ladderData.slice(0, 18).forEach(team => {
+        const row = document.createElement("tr");
 
-    // Populate the ladder table
-    ladderContainer.innerHTML = teams
-        .map(team => `
-            <tr>
-                <td>${team.rank}</td>
-                <td>${team.team || "Unknown Team"}</td>
-                <td>${team.wins || 0}</td>
-                <td>${team.losses || 0}</td>
-                <td>${parseFloat(team.percentage) ? parseFloat(team.percentage).toFixed(2) + "%" : "N/A"}</td>
-            </tr>
-        `)
-        .join("");
+        row.innerHTML = `
+            <td>${team.rank}</td>
+            <td>${team.team || "N/A"}</td>
+            <td>${team.wins || 0}</td>
+            <td>${team.losses || 0}</td>
+            <td>${team.percentage ? parseFloat(team.percentage).toFixed(2) + "%" : "0%"}</td>
+        `;
+
+        ladderContainer.appendChild(row);
+    });
+
+    console.log("✅ Live AFL Ladder Updated");
 }
 
 // Run function when the page loads
