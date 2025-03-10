@@ -1,22 +1,133 @@
+// ✅ Treat this file as a module
+export { submitLadder, loadLeaderboard };
+
 // ✅ Import Firebase Modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// ✅ Your Firebase Configuration
+// ✅ Your Firebase Configuration (Replace with actual values)
 const firebaseConfig = {
-    apiKey: "AIzaSyAGk1YEUQ1iB0cWCnrvHInwSdPUQJYtFBw",
-    authDomain: "afl-ladder-game.firebaseapp.com",
-    databaseURL: "https://afl-ladder-game-default-rtdb.firebaseio.com",
-    projectId: "afl-ladder-game",
-    storageBucket: "afl-ladder-game.appspot.com",
-    messagingSenderId: "779608521804",
-    appId: "1:779608521804:web:8c92c138dd2e61fa5688e9"
+  apiKey: "AIzaSyAGk1YEUQ1iB0cWCnrvHInwSdPUQJYtFBw",
+  authDomain: "afl-ladder-game.firebaseapp.com",
+  databaseURL: "https://afl-ladder-game-default-rtdb.firebaseio.com",
+  projectId: "afl-ladder-game",
+  storageBucket: "afl-ladder-game.firebasestorage.app",
+  messagingSenderId: "779608521804",
+  appId: "1:779608521804:web:8c92c138dd2e61fa5688e9"
 };
 
-// ✅ Initialize Firebase Realtime Database
+// ✅ Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-console.log("✅ Firebase Realtime Database Connected");
+const db = getFirestore(app);
+console.log("✅ Firebase Loaded Successfully");
+
+// ✅ AFL Teams List (For Ranking)
+const teams = [
+    "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon",
+    "Fremantle", "Geelong", "Gold Coast", "GWS", "Hawthorn",
+    "Melbourne", "North Melbourne", "Port Adelaide", "Richmond",
+    "St Kilda", "Sydney", "West Coast", "Western Bulldogs"
+];
+
+// ✅ Populate Drag-and-Drop Ranking List
+const teamRanking = document.getElementById("teamRanking");
+teams.forEach((team, index) => {
+    const listItem = document.createElement("li");
+    listItem.textContent = team;
+    listItem.draggable = true;
+    listItem.classList.add("draggable");
+    listItem.setAttribute("data-team", team);
+    
+    listItem.addEventListener("dragstart", (event) => {
+        event.dataTransfer.setData("text/plain", event.target.dataset.team);
+        event.target.classList.add("dragging");
+    });
+
+    listItem.addEventListener("dragend", (event) => {
+        event.target.classList.remove("dragging");
+    });
+
+    teamRanking.appendChild(listItem);
+});
+
+// ✅ Drag-and-Drop Functionality
+teamRanking.addEventListener("dragover", (event) => {
+    event.preventDefault();
+    const draggingItem = document.querySelector(".dragging");
+    const afterElement = getDragAfterElement(teamRanking, event.clientY);
+    
+    if (afterElement == null) {
+        teamRanking.appendChild(draggingItem);
+    } else {
+        teamRanking.insertBefore(draggingItem, afterElement);
+    }
+});
+
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll(".draggable:not(.dragging)")];
+
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+// ✅ Submit Ladder Prediction to Firebase
+async function submitLadder() {
+    const playerName = document.getElementById("playerName").value.trim();
+    if (!playerName) {
+        alert("Please enter your name.");
+        return;
+    }
+
+    const prediction = [];
+    document.querySelectorAll("#teamRanking li").forEach((li, index) => {
+        prediction.push({ rank: index + 1, team: li.textContent });
+    });
+
+    try {
+        await addDoc(collection(db, "predictions"), {
+            name: playerName,
+            prediction,
+            timestamp: new Date()
+        });
+
+        alert("✅ Prediction saved!");
+        loadLeaderboard();
+    } catch (error) {
+        console.error("❌ Error submitting ladder:", error);
+    }
+}
+
+// ✅ Load Leaderboard from Firebase
+async function loadLeaderboard() {
+    const tbody = document.getElementById('leaderboard');
+    tbody.innerHTML = ''; // Clear old data
+
+    try {
+        const querySnapshot = await getDocs(collection(db, "predictions"));
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const row = document.createElement("tr");
+
+            row.innerHTML = `<td>${data.name}</td><td>${JSON.stringify(data.prediction)}</td>`;
+            tbody.appendChild(row);
+        });
+
+        console.log("✅ Leaderboard Loaded Successfully");
+    } catch (error) {
+        console.error("❌ Error loading leaderboard:", error);
+    }
+}
+
+// ✅ Load leaderboard when the page loads
+loadLeaderboard();
 
 // 🏆 Fetch Live AFL Ladder from API-Sports
 async function fetchAFLStandings() {
@@ -76,57 +187,7 @@ function displayLadder(standings) {
     });
 
     console.log("✅ Live AFL Ladder Updated");
-}
-
-// 🏁 Run functions on page load
-window.addEventListener("DOMContentLoaded", () => {
-    fetchAFLStandings(); // Load AFL Ladder
-});
-// 📩 Handle Player Submissions
-document.getElementById("submitPrediction").addEventListener("click", function () {
-    const playerName = document.getElementById("playerName").value;
-    if (!playerName) {
-        alert("⚠️ Please enter your name!");
-        return;
-    }
-
-    // Placeholder logic: Save player prediction
-    const playerRef = ref(db, "leaderboard/" + playerName);
-    set(playerRef, {
-        name: playerName,
-        points: Math.floor(Math.random() * 100) // Placeholder for score logic
-    });
-
-    alert("✅ Prediction submitted!");
-    loadLeaderboard();
-});
-
-// 🏆 Load Leaderboard
-function loadLeaderboard() {
-    console.log("📡 Fetching Player Leaderboard...");
-    const leaderboardRef = ref(db, "leaderboard");
-
-    onValue(leaderboardRef, (snapshot) => {
-        const leaderboardContainer = document.getElementById("leaderboard");
-        if (!leaderboardContainer) {
-            console.error("❌ Leaderboard container not found!");
-            return;
-        }
-
-        leaderboardContainer.innerHTML = ""; // Clear existing content
-
-        const players = snapshot.val();
-        if (players) {
-            const sortedPlayers = Object.values(players).sort((a, b) => a.points - b.points);
-            sortedPlayers.forEach((player, index) => {
-                const row = document.createElement("tr");
-                row.innerHTML = `<td>${index + 1}</td><td>${player.name}</td><td>${player.points}</td>`;
-                leaderboardContainer.appendChild(row);
-            });
-        }
-
-        console.log("✅ Leaderboard Updated");
-    });
+    
 }
 
 // 🚀 Run functions on page load
