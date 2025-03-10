@@ -26,7 +26,7 @@ async function fetchAFLStandings() {
         const response = await fetch("https://api.squiggle.com.au/?q=standings&year=2025");
         const data = await response.json();
 
-        console.log("✅ AFL Ladder API Response:", data);
+        console.log("✅ AFL Ladder API Full Response:", data);
 
         if (data && data.standings) {
             console.log("🔍 Checking Standings Data:", data.standings); // Log standings array
@@ -52,15 +52,15 @@ function displayLadder(ladderData) {
     ladderContainer.innerHTML = "";
 
     ladderData
-        .sort((a, b) => a.rank - b.rank) // Sort by position
+        .sort((a, b) => a.rank - b.rank) // Ensure sorting by rank
         .forEach((team) => {
-            console.log("🏈 Processing Team:", team); // Debugging log
+            console.log("🏈 Processing Team:", team); // Debugging log to check team object
 
             const row = document.createElement("tr");
 
             row.innerHTML = `
                 <td>${team.rank}</td>
-                <td>${team.name || team.team || "Unknown Team"}</td> <!-- Try different key names -->
+                <td>${team.name || team.team || team.full_name || "Unknown Team"}</td> <!-- Try different key names -->
             `;
 
             ladderContainer.appendChild(row);
