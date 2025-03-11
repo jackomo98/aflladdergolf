@@ -75,7 +75,7 @@ function getDragAfterElement(container, y) {
     }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
-// 🏅 Handle Player Submissions with **Accurate Scoring**
+// 🏅 Handle Player Submissions
 async function submitPrediction() {
     const playerName = document.getElementById("playerName").value;
 
@@ -84,55 +84,15 @@ async function submitPrediction() {
         return;
     }
 
-    // ✅ Get player's ranked teams from the list
-    const rankedTeams = Array.from(document.querySelectorAll("#teamRanking li"))
-        .map((li, index) => ({ name: li.textContent, predictedRank: index + 1 }));
+    // ✅ Save placeholder random score (Scoring Not Fixed Yet)
+    const playerRef = ref(db, "leaderboard/" + playerName);
+    set(playerRef, {
+        name: playerName,
+        points: Math.floor(Math.random() * 100) // 🔴 Temporary Placeholder Score
+    });
 
-    console.log("✅ Player Prediction:", rankedTeams);
-
-    try {
-        // ✅ Fetch the latest AFL ladder from the API
-        const response = await fetch("https://api.squiggle.com.au/?q=standings");
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        if (!data.standings || data.standings.length === 0) {
-            console.error("⚠ No ladder data found!");
-            return;
-        }
-
-        const liveLadder = data.standings.map(team => ({
-            name: team.name,
-            actualRank: team.rank
-        }));
-
-        console.log("✅ Live AFL Ladder:", liveLadder);
-
-        // ✅ Calculate the player's score based on position differences
-        let totalScore = 0;
-        rankedTeams.forEach(predictedTeam => {
-            const actualTeam = liveLadder.find(team => team.name === predictedTeam.name);
-            if (actualTeam) {
-                totalScore += Math.abs(predictedTeam.predictedRank - actualTeam.actualRank);
-            }
-        });
-
-        console.log("🏆 Player Score:", totalScore);
-
-        // ✅ Save the player's score to Firebase
-        const playerRef = ref(db, "leaderboard/" + playerName);
-        set(playerRef, {
-            name: playerName,
-            points: totalScore
-        });
-
-        alert("✅ Prediction submitted!");
-        loadLeaderboard();
-    } catch (error) {
-        console.error("❌ Error fetching live ladder:", error);
-    }
+    alert("✅ Prediction submitted!");
+    loadLeaderboard();
 }
 
 // ✅ Attach the function to the submit button
@@ -192,7 +152,15 @@ async function fetchAFLStandings() {
             return;
         }
 
-        displayLadder(data.standings);
+        const liveLadder = data.standings.map(team => ({
+            name: team.name,
+            actualRank: team.rank
+        }));
+
+        console.log("✅ Live AFL Ladder:", liveLadder);
+
+        // ✅ Display Live Ladder
+        displayLadder(liveLadder);
     } catch (error) {
         console.error("❌ Error fetching AFL ladder:", error);
     }
@@ -207,17 +175,20 @@ function displayLadder(standings) {
         return;
     }
 
+    // Clear existing table
     ladderContainer.innerHTML = "";
-    standings.forEach(team => {
+
+    standings.forEach((team) => {
         const row = document.createElement("tr");
-        row.innerHTML = `<td>${team.rank}</td><td>${team.name}</td>`;
+        row.innerHTML = `
+            <td>${team.actualRank}</td>
+            <td>${team.name}</td>
+        `;
         ladderContainer.appendChild(row);
     });
 
     console.log("✅ Live AFL Ladder Updated");
 }
 
-// 🏁 Run functions on page load
-window.addEventListener("DOMContentLoaded", () => {
-    fetchAFLStandings(); // Load AFL Ladder
-});
+// ✅ Load AFL ladder when page loads
+window.addEventListener("DOMContentLoaded", fetchAFLStandings);
