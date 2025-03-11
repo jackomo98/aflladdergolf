@@ -83,6 +83,28 @@ const originalOrder = [
     "St Kilda", "Sydney", "West Coast", "Western Bulldogs"
 ];
 
+// ✅ Mapping of short names to official API names
+const teamNameMap = {
+    "Adelaide": "Adelaide",
+    "Brisbane": "Brisbane Lions",
+    "Carlton": "Carlton",
+    "Collingwood": "Collingwood",
+    "Essendon": "Essendon",
+    "Fremantle": "Fremantle",
+    "Geelong": "Geelong",
+    "Gold Coast": "Gold Coast",
+    "GWS": "Greater Western Sydney",  // <-- Fixing GWS issue
+    "Hawthorn": "Hawthorn",
+    "Melbourne": "Melbourne",
+    "North Melbourne": "North Melbourne",
+    "Port Adelaide": "Port Adelaide",
+    "Richmond": "Richmond",
+    "St Kilda": "St Kilda",
+    "Sydney": "Sydney",
+    "West Coast": "West Coast",
+    "Western Bulldogs": "Western Bulldogs"
+};
+
 // 🏁 Function to reset the ranking list
 function resetRanking() {
     const teamRanking = document.getElementById("teamRanking");
@@ -144,14 +166,17 @@ async function submitPrediction() {
 
         console.log("🏆 Live AFL Ladder:", liveLadder);
 
-        // ✅ Calculate score based on position differences
-        let totalScore = 0;
-        rankedTeams.forEach(predictedTeam => {
-            const actualTeam = liveLadder.find(team => team.name === predictedTeam.name);
-            if (actualTeam) {
-                totalScore += Math.abs(predictedTeam.predictedRank - actualTeam.actualRank);
-            }
-        });
+     // ✅ Calculate score based on position differences
+let totalScore = 0;
+rankedTeams.forEach(predictedTeam => {
+    // Convert short name to full API name
+    const officialName = teamNameMap[predictedTeam.name] || predictedTeam.name;
+
+    const actualTeam = liveLadder.find(team => team.name === officialName);
+    if (actualTeam) {
+        totalScore += Math.abs(predictedTeam.predictedRank - actualTeam.actualRank);
+    }
+});
 
         console.log("🎯 Player Score:", totalScore);
 
