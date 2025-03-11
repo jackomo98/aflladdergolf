@@ -75,7 +75,6 @@ function getDragAfterElement(container, y) {
     }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
-// 🏅 Handle Player Submissions
 async function submitPrediction() {
     const playerName = document.getElementById("playerName").value;
 
@@ -84,15 +83,56 @@ async function submitPrediction() {
         return;
     }
 
-    // ✅ Save placeholder random score (Scoring Not Fixed Yet)
-    const playerRef = ref(db, "leaderboard/" + playerName);
-    set(playerRef, {
-        name: playerName,
-        points: Math.floor(Math.random() * 100) // 🔴 Temporary Placeholder Score
-    });
+    // ✅ Get player's ranked teams
+    const rankedTeams = Array.from(document.querySelectorAll("#teamRanking li"))
+        .map((li, index) => ({
+            name: li.textContent.trim(),
+            predictedRank: index + 1 
+        }));
 
-    alert("✅ Prediction submitted!");
-    loadLeaderboard();
+    console.log("⭐ Player Prediction:", rankedTeams);
+
+    try {
+        // ✅ Fetch the latest AFL ladder from Squiggle API
+        const response = await fetch("https://api.squiggle.com.au/?q=standings");
+        const data = await response.json();
+
+        if (!data.standings) {
+            console.error("⚠ No ladder data found!");
+            return;
+        }
+
+        // ✅ Convert live ladder data into a comparable format
+        const liveLadder = data.standings.map(team => ({
+            name: team.name,
+            actualRank: team.rank
+        }));
+
+        console.log("🏆 Live AFL Ladder:", liveLadder);
+
+        // ✅ Calculate score based on position differences
+        let totalScore = 0;
+        rankedTeams.forEach(predictedTeam => {
+            const actualTeam = liveLadder.find(team => team.name === predictedTeam.name);
+            if (actualTeam) {
+                totalScore += Math.abs(predictedTeam.predictedRank - actualTeam.actualRank);
+            }
+        });
+
+        console.log("🎯 Player Score:", totalScore);
+
+        // ✅ Save to Firebase
+        const playerRef = ref(db, "leaderboard/" + playerName);
+        set(playerRef, {
+            name: playerName,
+            points: totalScore
+        });
+
+        alert("✅ Prediction submitted!");
+        loadLeaderboard();
+    } catch (error) {
+        console.error("❌ Error fetching live ladder:", error);
+    }
 }
 
 // ✅ Attach the function to the submit button
