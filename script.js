@@ -18,9 +18,9 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 console.log("✅ Firebase Connected");
 
-// ✅ AFL Teams List (For Player Predictions)
+// ✅ Official team names (matching API data)
 const teams = [
-    "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon",
+    "Adelaide", "Brisbane Lions", "Carlton", "Collingwood", "Essendon",
     "Fremantle", "Geelong", "Gold Coast", "Greater Western Sydney", "Hawthorn",
     "Melbourne", "North Melbourne", "Port Adelaide", "Richmond",
     "St Kilda", "Sydney", "West Coast", "Western Bulldogs"
@@ -77,7 +77,7 @@ function getDragAfterElement(container, y) {
 
 // ✅ Store the original order of teams
 const originalOrder = [
-    "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon",
+    "Adelaide", "Brisbane Lions", "Carlton", "Collingwood", "Essendon",
     "Fremantle", "Geelong", "Gold Coast", "Greater Western Sydney", "Hawthorn",
     "Melbourne", "North Melbourne", "Port Adelaide", "Richmond",
     "St Kilda", "Sydney", "West Coast", "Western Bulldogs"
