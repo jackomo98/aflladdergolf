@@ -78,7 +78,7 @@ function getDragAfterElement(container, y) {
 // ✅ Store the original order of teams
 const originalOrder = [
     "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon",
-    "Fremantle", "Geelong", "Gold Coast", "GWS", "Hawthorn",
+    "Fremantle", "Geelong", "Gold Coast", "Greater Western Sydney", "Hawthorn",
     "Melbourne", "North Melbourne", "Port Adelaide", "Richmond",
     "St Kilda", "Sydney", "West Coast", "Western Bulldogs"
 ];
