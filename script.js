@@ -21,7 +21,7 @@ console.log("✅ Firebase Connected");
 // ✅ AFL Teams List (For Player Predictions)
 const teams = [
     "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon",
-    "Fremantle", "Geelong", "Gold Coast", "GWS", "Hawthorn",
+    "Fremantle", "Geelong", "Gold Coast", "Greater Western Sydney", "Hawthorn",
     "Melbourne", "North Melbourne", "Port Adelaide", "Richmond",
     "St Kilda", "Sydney", "West Coast", "Western Bulldogs"
 ];
