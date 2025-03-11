@@ -75,6 +75,40 @@ function getDragAfterElement(container, y) {
     }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
+// ✅ Store the original order of teams
+const originalOrder = [
+    "Adelaide", "Brisbane", "Carlton", "Collingwood", "Essendon",
+    "Fremantle", "Geelong", "Gold Coast", "GWS", "Hawthorn",
+    "Melbourne", "North Melbourne", "Port Adelaide", "Richmond",
+    "St Kilda", "Sydney", "West Coast", "Western Bulldogs"
+];
+
+// 🏁 Function to reset the ranking list
+function resetRanking() {
+    const teamRanking = document.getElementById("teamRanking");
+    teamRanking.innerHTML = ""; // Clear current list
+
+    originalOrder.forEach((team) => {
+        const listItem = document.createElement("li");
+        listItem.textContent = team;
+        listItem.draggable = true;
+        listItem.classList.add("draggable");
+        listItem.setAttribute("data-team", team);
+
+        listItem.addEventListener("dragstart", (event) => {
+            event.dataTransfer.setData("text/plain", event.target.dataset.team);
+            event.target.classList.add("dragging");
+        });
+
+        listItem.addEventListener("dragend", (event) => {
+            event.target.classList.remove("dragging");
+        });
+
+        teamRanking.appendChild(listItem);
+    });
+}
+
+// 🔥 Updated submitPrediction() with reset after submission
 async function submitPrediction() {
     const playerName = document.getElementById("playerName").value;
 
@@ -129,12 +163,15 @@ async function submitPrediction() {
         });
 
         alert("✅ Prediction submitted!");
+
+        // 🔄 Reset the ranking list after submission
+        resetRanking();
+
         loadLeaderboard();
     } catch (error) {
         console.error("❌ Error fetching live ladder:", error);
     }
 }
-
 // ✅ Attach the function to the submit button
 document.getElementById("submitPrediction").addEventListener("click", submitPrediction);
 
