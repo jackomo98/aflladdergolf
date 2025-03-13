@@ -11,11 +11,16 @@
     <div class="home-container">
         <h1>Welcome to the AFL Ladder Tipping Game!</h1>
         <button onclick="enterGame()">Enter Game</button>
+        <button onclick="enterGoalTracker()">Live Goal Tracker</button> <!-- 🆕 Added Button -->
     </div>
 
     <script>
         function enterGame() {
             window.location.href = "game.html";
+        }
+
+        function enterGoalTracker() { // 🆕 Function for New Page
+            window.location.href = "goals.html";
         }
     </script>
 
