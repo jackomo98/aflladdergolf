@@ -94,3 +94,20 @@ th {
     color: #003087;
     font-weight: bold;
 }
+
+#goalTracker table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#goalTracker th, #goalTracker td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+#goalTracker th {
+    background-color: #004AAD; /* AFL Blue */
+    color: white;
+}
